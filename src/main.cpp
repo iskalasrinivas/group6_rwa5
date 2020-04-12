@@ -1,6 +1,6 @@
 /**
- * @file      src/executer.cpp
- * @brief     Header file for building map
+ * @file      src/main.cpp
+ * @brief     Source file for main function
  * @author    Saurav Kumar
  * @author    Raja Srinivas
  * @author    Sanket Acharya
@@ -38,28 +38,36 @@
  *OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <osrf_gear/AGVControl.h>
+#include <ros/ros.h>
+#include <std_srvs/Trigger.h>
+#include <tf/tf.h>
+#include <iostream>
+#include "order_manager.h"
+//#include "../include/group6_rwa4/competition.h"
+#include "competition.h"
+//#include "../include/group6_rwa4/sensor.h"
 
-#include <order_part.h>
-#include <robot_controller.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
+int main(int argc, char **argv) {
+
+	ROS_INFO("Starting main function");
+	ros::init(argc, argv, "ariac_manager_node");
+	ros::AsyncSpinner async_spinner(4);
+	async_spinner.start();
+
+//	ros::NodeHandle node_handler;
+//	ros::Duration(20).sleep();
+
+//
+	Competition mycompetition;
+//
+//	while(ros::ok()){
+//		ROS_INFO_STREAM("HELLO");
+//		std::cout << "OK";
+	ros::waitForShutdown();
+//	}
 
 
-
-
-void Executor(OrderPart::getCurrentPose *current_pose_)
-{
-	
-	if (immediate_goal->src_pose != NULL)
-	{
-		RobotController::moveToTarget(src_pose)
-		Robot_controller::GripperToggle(True)
-
-		while ()
-		{
-			RobotController::GoToTarget(goal_pose)
-		}
-
-		Robot_controller::GripperToggle(False)
-	}
+	return 0;
 }

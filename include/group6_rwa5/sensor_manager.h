@@ -1,8 +1,13 @@
+#ifndef GROUP6_RWA5_SENSORMANAGER_H_
+#define GROUP6_RWA5_SENSORMANAGER_H_
+
 #include <logical_camera_sensor.h>
+#include <environment.h>
 class SensorManager{
 
     private:
     ros::NodeHandle sensor_nh_;
+    Environment * env_;
     LogicalCameraSensor lcamera_bin1;
     LogicalCameraSensor lcamera_bin2;
     LogicalCameraSensor lcamera_bin3;
@@ -12,9 +17,11 @@ class SensorManager{
 
     public:
    
-    SensorManager();
+    SensorManager(Environment *);
     ~SensorManager();
 
 
 
-};
+}; 
+
+#endif // GROUP6_RWA5_SENSORMANAGER_H_

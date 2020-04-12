@@ -47,6 +47,10 @@
 
 class Planner {
 public:
-    Planner(Environment*);
+    Planner(Environment *);
     ~Planner();
-}
+private:
+    Environment * env_;
+};
+
+#endif // GROUP6_RWA5_PLANNER_H

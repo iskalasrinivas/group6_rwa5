@@ -40,3 +40,7 @@
  */
 
 #include <planner.h>
+
+Planner::Planner(Environment * env): env_(env){};
+
+Planner::~Planner(){};

@@ -1,3 +1,6 @@
+#ifndef GROUP6_RWA4_ENVIRONMENT_H
+#define GROUP6_RWA4_ENVIRONMENT_H
+
 #include <list>
 #include <map>
 #include <string>
@@ -30,8 +33,9 @@ class Environment{
 
     std::map<std::string, std::map<std::string, std::vector<geometry_msgs::Pose>>>* getAllBinParts();
     std::map<std::string, std::vector<geometry_msgs::Pose>>* getSortedBinParts();
-    std::map<std::string, std::vector<OrderPart*>>* getAllOrderParts();
-    std::vector<OrderPart*>* getDeliveredParts();
+    std::vector<std::map<std::string, std::vector<OrderPart*>>>* getAllOrderParts();
     std::map<std::string, std::vector<OrderPart*>>* getTray1Parts();
     std::map<std::string, std::vector<OrderPart*>>* getTray2Parts();
 };
+
+#endif //GROUP6_RWA4_ENVIRONMENT_H

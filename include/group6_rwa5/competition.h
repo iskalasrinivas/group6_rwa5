@@ -57,7 +57,10 @@
 #include <osrf_gear/Order.h>
 #include <osrf_gear/Proximity.h>
 #include <trajectory_msgs/JointTrajectory.h>
-#include <sensor.h>
+#include <sensor_manager.h>
+#include <environment.h>
+#include <executer.h>
+#include <planner.h>
 
 //class AriacOrderManager;
 
@@ -67,18 +70,16 @@ private:
 
 	ros::NodeHandle comp_nh_;
 	//AriacOrderManager order_manager_;
-	AriacSensorManager sensor_;
+	Environment env_;
+	SensorManager sensor_;
+	Planner planner_;
+	Executer executer_;
+	
 
 
 	std::string competition_state_;
 	double current_score_;
-	ros::Publisher arm_1_joint_trajectory_publisher_;
-	ros::Publisher arm_2_joint_trajectory_publisher_;
-
-	sensor_msgs::JointState arm_1_current_joint_states_;
-	sensor_msgs::JointState arm_2_current_joint_states_;
-	bool arm_1_has_been_zeroed_;
-	bool arm_2_has_been_zeroed_;
+	
 //	osrf_gear::Order order_;
 	ros::Subscriber current_score_subscriber;
 
@@ -93,14 +94,6 @@ public:
 	
 	/// Called when a new message is received.
 	void competition_state_callback(const std_msgs::String::ConstPtr & );
-
-	/// Called when a new JointState message is received.
-	void arm_1_joint_state_callback(const sensor_msgs::JointState::ConstPtr & );
-
-	void arm_2_joint_state_callback(const sensor_msgs::JointState::ConstPtr &);
-
-	/// Create a JointTrajectory with all positions set to zero, and command the arm.
-	void send_arm_to_zero_state(ros::Publisher &);
 
 	void StartCompetition();
 

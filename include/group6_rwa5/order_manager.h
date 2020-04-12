@@ -75,6 +75,7 @@ public:
     ~OrderManager();
     void OrderCallback(const osrf_gear::Order::ConstPtr&);
     void setOrderParts(const osrf_gear::Order::ConstPtr& order_msg);
-}
+    void updateAllOrder();
+};
 
 #endif //  GROUP6_RWA5_ORDER_MANAGER_H_

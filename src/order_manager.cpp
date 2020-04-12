@@ -63,11 +63,11 @@ void OrderManager::OrderCallback
 }
 
 void OrderManager::updateAllOrder(){
-    auto all_orderParts = environment->getAllOrderParts();
-    for(const auto &orderPart : all_orderParts){
-        auto tray1_parts = environment->getTray1Parts()
+    // auto all_orderParts = environment->getAllOrderParts();
+    // for(const auto &orderPart : all_orderParts){
+    //     auto tray1_parts = environment->getTray1Parts()
 
-    }
+    // }
 }
 
 void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr& order_msg) {
@@ -78,7 +78,7 @@ void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr& order_msg) {
         auto all_orderParts = environment->getAllOrderParts();
         for (const auto &shipment : shipments)
         {
-            std::map<std::string, std::vector<OrderPart*>>> shipment_Parts;
+            std::map<std::string, std::vector<OrderPart*>> shipment_Parts;
             auto shipment_type = shipment.shipment_type;
             auto agv_id = shipment.agv_id;
             auto products = shipment.products;

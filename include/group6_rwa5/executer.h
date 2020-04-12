@@ -46,13 +46,40 @@
 #include <order_part.h>
 #include <environment.h>
 #include <osrf_gear/Order.h>
+#include <ros/ros.h>
+
+#include <sensor_msgs/JointState.h>
+#include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/Range.h>
+#include <trajectory_msgs/JointTrajectory.h>
 
 
 class Executer
 {
+private:
+    ros::NodeHandle execute_nh_;
+    ros::Publisher arm_1_joint_trajectory_publisher_;
+	ros::Publisher arm_2_joint_trajectory_publisher_;
+
+	sensor_msgs::JointState arm_1_current_joint_states_;
+	sensor_msgs::JointState arm_2_current_joint_states_;
+	bool arm_1_has_been_zeroed_;
+	bool arm_2_has_been_zeroed_;
+
+    Environment* env_;
+
 public:
     Executer(Environment*);
     ~Executer();
 
+    /// Called when a new JointState message is received.
+	void arm_1_joint_state_callback(const sensor_msgs::JointState::ConstPtr & );
 
-}
+	void arm_2_joint_state_callback(const sensor_msgs::JointState::ConstPtr &);
+
+	/// Create a JointTrajectory with all positions set to zero, and command the arm.
+	void send_arm_to_zero_state(ros::Publisher &);
+
+};
+
+#endif //GROUP6_RWA5_EXECUTER_H

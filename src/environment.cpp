@@ -8,12 +8,8 @@ std::map<std::string, std::vector<geometry_msgs::Pose>>* Environment::getSortedB
     return &sorted_all_binParts;
 
 }
-std::map<std::string, std::vector<OrderPart*>>* Environment::getAllOrderParts(){
+std::vector<std::map<std::string, std::vector<OrderPart*>>>* Environment::getAllOrderParts(){
      return &all_orderParts;
-}
-
-std::vector<OrderPart*>* Environment::getDeliveredParts(){
-    return &delivered_parts;
 }
 
 std::map<std::string, std::vector<OrderPart*>>* Environment::getTray1Parts(){

@@ -65,7 +65,9 @@ public:
 	~LogicalCameraSensor();
 
 	void logicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
+	void SortAllBinParts();
+
 
 };
 
-#endif // GROUP6_RWA4_SENSOR_H_
+#endif // GROUP6_RWA5_LOGICAL_CAMERA_SENSOR_H_

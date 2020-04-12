@@ -59,12 +59,12 @@ class Transformer {
 
     Transformer(const std::string &);
     ~Transformer();
-    void getCameraName();
+    std::string getCameraName();
     void setWorldTransform();
-    void setParentPose(const geometry_msgs::Pose & sensor_pose)
-    void setChildPose(const geometry_msgs::Pose & child_pose)
+    void setParentPose(const geometry_msgs::Pose & sensor_pose);
+    void setChildPose(const geometry_msgs::Pose & child_pose);
     void setPose(const geometry_msgs::Pose , geometry_msgs::TransformStamped &);
-    void setPose(geometry_msgs::TransformStamped *, geometry_msgs::Pose &);
+    void setPose(const geometry_msgs::TransformStamped &, geometry_msgs::Pose &);
     geometry_msgs::Pose getChildWorldPose();
 
     private:
