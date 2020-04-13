@@ -43,8 +43,9 @@
 #include <std_srvs/Trigger.h>
 #include <boost/optional.hpp>
 #include <order_manager.h>
+#include <environment.h>
 
-OrderManager::OrderManager(Environment *env): environment(env){
+AriacOrderManager::AriacOrderManager(Environment *env): environment(env){
 	ros::AsyncSpinner async_spinner(4);
 	async_spinner.start();
     order_= NULL;
@@ -52,10 +53,10 @@ OrderManager::OrderManager(Environment *env): environment(env){
 			&OrderManager::OrderCallback, this);
 }
 
-OrderManager::~OrderManager() {}
+AriacOrderManager::~AriacOrderManager() {}
 
 
-void OrderManager::OrderCallback
+void AriacOrderManager::OrderCallback
 (const osrf_gear::Order::ConstPtr& order_msg) {
     ROS_WARN(">>>>> OrderCallback");
     setOrderParts(order_msg);
@@ -63,11 +64,11 @@ void OrderManager::OrderCallback
 }
 
 void OrderManager::updateAllOrder(){
-    // auto all_orderParts = environment->getAllOrderParts();
-    // for(const auto &orderPart : all_orderParts){
-    //     auto tray1_parts = environment->getTray1Parts()
+    auto all_orderParts = environment->getAllOrderParts();
+    for(const auto &orderPart : all_orderParts){
+        auto tray1_parts = environment->getTray1Parts()
 
-    // }
+    }
 }
 
 void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr& order_msg) {
@@ -78,7 +79,7 @@ void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr& order_msg) {
         auto all_orderParts = environment->getAllOrderParts();
         for (const auto &shipment : shipments)
         {
-            std::map<std::string, std::vector<OrderPart*>> shipment_Parts;
+            std::map<std::string, std::vector<OrderPart*>>> shipment_Parts;
             auto shipment_type = shipment.shipment_type;
             auto agv_id = shipment.agv_id;
             auto products = shipment.products;
