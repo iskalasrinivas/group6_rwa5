@@ -62,13 +62,43 @@ void OrderManager::OrderCallback
     setOrderParts(order_msg);
         
 }
-
+// once the part are categorized in agv1 and agv2 we need to compare with parts
+// available in agv1 and agv2 resp and then remove the unnecessary part from the tray
+// displace the parts in tray itself and add the new parts from bin.
 void OrderManager::updateAllOrder(){
-    // auto all_orderParts = environment->getAllOrderParts();
-    // for(const auto &orderPart : all_orderParts){
-    //     auto tray1_parts = environment->getTray1Parts()
+    if(!environment->getAgv1OrderParts().empty()){
+        auto agv1_FirstOrder = *(environment->getAgv1OrderParts().begin());
+        auto r_tray1_parts = environment->getTray1Parts();
+        for(auto traypart_map : r_tray1_parts){
+          auto part_type = traypart_map->first;
+          auto part_vec = traypart_map->second;
+          if(agv1_FirstOrder[part_type].count) {
+            for(auto O_it = agv1_FirstOrder[part_type].begin(); O_it != agv1_FirstOrder[part_type].end(), ++O_it) {
+              for(auto t_it = part_vec.begin(); t_it != part_vec.end(), ++t_it) {
+                  if(O_it->getEndPose == t_it->pose) {
+                      //remove this item from r_tray1_parts
+                  }
+              }
+            }
+            
+          }
+          
+          }
 
-    // }
+        }
+    }
+    if(!environment->getAgv2OrderParts().empty()){
+    auto agv2_FirstOrder = *(environment->getAgv2OrderParts().begin());
+    auto tray2_parts = environment->getTray2Parts();
+    for(auto part_map : tray1_parts){
+        auto part_type = part_map->first;
+        auto part_vec = part_map->second;
+        if(part_vec.size() > agv1_OrderParts.){
+
+        }
+    }
+    
+   
 }
 
 void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr& order_msg) {
@@ -76,7 +106,8 @@ void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr& order_msg) {
 
         auto order_id = order_msg->order_id;
         auto shipments = order_msg->shipments;
-        auto all_orderParts = environment->getAllOrderParts();
+        auto agv1_OrderParts = environment->getAgv1OrderParts();
+        auto agv2_OrderParts = environment->getAgv2OrderParts();
         for (const auto &shipment : shipments)
         {
             std::map<std::string, std::vector<OrderPart*>> shipment_Parts;
@@ -101,6 +132,12 @@ void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr& order_msg) {
                     shipment_Parts[part_type] = vec;
                 }
             }
-            all_orderParts->push_back(shipment_Parts);
+            if(agv_id == "agv_1" || agv_id == "any"){
+                agv1_OrderParts->push_back(shipment_Parts);
+            }
+            else {
+                agv2_OrderParts->push_back(shipment_Parts);
+            }
+            
         }
 }

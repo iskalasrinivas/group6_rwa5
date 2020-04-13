@@ -42,11 +42,38 @@
 #include <planner.h>
 
 Planner::Planner(Environment * env): env_(env), ordermanager_(env_){};
+Planner::~Planner(){};
 
 
-
+Planner::plan(){
+    std::vector<OrderPart> arm2_Vector;
+    std::vector<OrderPart> arm1_Vector;
+    auto sorted_BinParts = environment->getSortedBinParts();
+    auto agv1_OrderParts = environment->getAgv1OrderParts();
+    auto agv2_OrderParts = environment->getAgv2OrderParts();
+    for (const auto &part : agv1_OrderParts){
+        if(part->first == )  )
+        if (part.getTrayPose().position.y)>1.5){
+                arm2_Vector.push_back(part);
+        } else
+        {
+            arm1_Vector.push_back(part);
+        }
+    }
+    for (const auto &part : agv2_OrderParts)
+    {
+        if (part.getTrayPose().position.y)<0.5)
+            {
+                arm1_Vector.push_back(part);
+                arm2_Vector.push_back(part);
+            }
+        else
+        {
+            arm2_Vector.push_back(part);
+        }
+    }
+}
 // find Unreachable Parts for agv1 from the agv1 order
-
 
 // push these parts to the vector of the order parts of arm2
 
@@ -61,5 +88,3 @@ Planner::Planner(Environment * env): env_(env), ordermanager_(env_){};
 
 
 
-
-Planner::~Planner(){};
