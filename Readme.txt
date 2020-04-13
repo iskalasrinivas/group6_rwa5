@@ -1,14 +1,14 @@
-# group6_rwa4
+# group6_rwa5
 
 (a) Build Instructions
 
-1. copy group6_rwa4.zip to "catkin_ws/src"
+1. copy group6_rwa5.zip to "catkin_ws/src"
 2. Run following command in the terminal:
 
  cd ~/catkin_ws/src
- unzip group6_rwa4.zip
+ unzip group6_rwa5.zip
  cd ..
- catkin_make --only-pkg-with-deps group6_rwa4
+ catkin_make --only-pkg-with-deps group6_rwa5
 
 
 (b) Run Instructions
@@ -21,7 +21,7 @@
 
 3. Run following commands in new terminals:
  
- roslaunch group6_rwa4 group6_rwa4.launch
+ roslaunch group6_rwa5 group6_rwa5.launch
  roslaunch ur10_moveit_config move_group.launch arm_namespace:=/ariac/arm1
- rosrun group6_rwa4 main_node
+ rosrun group6_rwa5 main_node
 

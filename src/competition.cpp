@@ -121,8 +121,6 @@ void Competition::StartCompetition() {
 	}
 }
 
-
-
 void Competition::EndCompetition() {
 	ros::ServiceClient start_client =
 			comp_nh_.serviceClient<std_srvs::Trigger>("/ariac/end_competition");

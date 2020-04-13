@@ -41,6 +41,25 @@
 
 #include <planner.h>
 
-Planner::Planner(Environment * env): env_(env){};
+Planner::Planner(Environment * env): env_(env), ordermanager_(env_){};
+
+
+
+// find Unreachable Parts for agv1 from the agv1 order
+
+
+// push these parts to the vector of the order parts of arm2
+
+// execute to deliver these parts to the common location
+
+// find Unreachable Parts for agv2 from the agv2 order
+
+// push these parts to the vector of the order parts of arm1
+
+// execute to deliver these parts to the common location
+
+
+
+
 
 Planner::~Planner(){};

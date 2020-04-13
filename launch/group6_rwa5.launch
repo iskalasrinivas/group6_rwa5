@@ -23,7 +23,7 @@
           $(arg fill_demo_shipment_args)
           --visualize-sensor-views
           -f $(find osrf_gear)/config/sample.yaml
-          $(find group6_rwa4)/config/my_sample_sensors.yaml
+          $(find group6_rwa5)/config/my_sample_sensors.yaml
           " required="true" output="screen" />
 
 

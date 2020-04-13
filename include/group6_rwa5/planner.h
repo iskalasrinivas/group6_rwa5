@@ -51,6 +51,7 @@ public:
     ~Planner();
 private:
     Environment * env_;
+    OrderManager ordermanager_;
 };
 
 #endif // GROUP6_RWA5_PLANNER_H
