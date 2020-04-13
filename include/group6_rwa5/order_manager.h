@@ -61,7 +61,7 @@
 
 using std::vector;
 
-class AriacOrderManager
+class OrderManager
 {
 private:
     ros::NodeHandle order_manager_nh_;
@@ -71,10 +71,11 @@ private:
     Environment *environment;
 
 public:
-    explicit AriacOrderManager(Environment *);
-    ~AriacOrderManager();
+    explicit OrderManager(Environment *);
+    ~OrderManager();
+    void updateAllOrder();
     void OrderCallback(const osrf_gear::Order::ConstPtr&);
     void setOrderParts(const osrf_gear::Order::ConstPtr& order_msg);
-}
+};
 
 #endif //  GROUP6_RWA5_ORDER_MANAGER_H_
