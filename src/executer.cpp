@@ -46,7 +46,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-Executer::Executer(Environment* env): env_(env), arm_1_has_been_zeroed_(false), arm_2_has_been_zeroed_(false){
+Executer::Executer(Environment* env): env_(env), arm_1_has_been_zeroed_(false), arm_2_has_been_zeroed_(false), arm1_("arm1"), arm2_("arm2"){
 	arm_1_joint_trajectory_publisher_ = execute_nh_.advertise<trajectory_msgs::JointTrajectory>( "/ariac/arm1/arm/command", 10);
 
 	arm_2_joint_trajectory_publisher_ = execute_nh_.advertise<trajectory_msgs::JointTrajectory>("/ariac/arm2/arm/command", 10);
@@ -118,16 +118,75 @@ void Executer::send_arm_to_zero_state(ros::Publisher & joint_trajectory_publishe
 	joint_trajectory_publisher.publish(msg);
 }
 
-void Executer::Executor()
-{
-	auto order_part = env_->getImmediateGoal(); 
-	if(!order_part.empty())
-	{
-		auto src_pose = order_part->getCurrentPose();
-		auto goal_pose = order_part->getEndPose();
-		control_.moveToTarget(src_pose); //ask saurav whether the planner has to use waypoints or not
-		control_.GripperToggle(True);
-		if(control_.isPartAttached()){
-		   control_.moveToTarget(goal_pose);
+// void Executer::Executor() {
+
+
+	
+// 	if(!order_part.empty())
+// 	{
+// 		auto src_pose = order_part->getCurrentPose();
+// 		auto goal_pose = order_part->getEndPose();
+// 		control_.moveToTarget(src_pose); //ask saurav whether the planner has to use waypoints or not
+// 		control_.GripperToggle(True);
+// 		if(control_.isPartAttached()){
+// 		   control_.moveToTarget(goal_pose);
+// 		}
+// 		control_.GripperToggle(False);
+
+
+void Executer::Execute() {
+	auto arm1preOrderParts = env_->getArm1PreOrderParts;
+	for((auto po1_vec_it = arm1preOrderParts.begin();po1_vec_it != arm1preOrderParts.end(); ++po1_vec_it) {
+		
+		for (auto po1_map_it = po1_vec_it->begin();po1_map_it != po1_vec_it->end(); ++po1_map_it) {
+
+			for(auto po1_it = po1_map_it->begin();po1_it != po1_map_it->end(); ++po1_it) {
+				deliverThePartinBin((*po1_it));
+				removeItemFromPreOrderPart((*po1_it));
+				updatePickupCoordianate((*po1_it));
+				updateDeliveryCoordianate((*po1_it));
+			}
 		}
-		control_.GripperToggle(False);
+	}
+
+	auto arm2preOrderParts = env_->getArm2PreOrderParts;
+	for((auto po2_vec_it = arm1preOrderParts.begin();po2_vec_it != arm1preOrderParts.end(); ++po2_vec_it) {
+	
+		for (auto po2_map_it = po1_vec_it->begin();po2_map_it != po1_vec_it->end(); ++po2_map_it) {
+
+			for(auto po2_it = po1_map_it->begin();po2_it != po1_map_it->end(); ++po2_it) {
+				deliverThePartinBin((*po2_it));
+				removeItemFromPreOrderPart((*po2_it));
+				updatePickupCoordianate((*po2_it));
+				updateDeliveryCoordianate((*po2_it));
+			}
+		}
+	}
+
+	auto arm1OrderParts = env_->getArm1OrderParts;
+	for((auto o1_vec_it = arm1OrderParts.begin();o1_vec_it != arm1OrderParts.end(); ++o1_vec_it) {
+		
+		for (auto o1_map_it = po1_vec_it->begin();o1_map_it != po1_vec_it->end(); ++o1_map_it) {
+
+			for(auto o1_it = po1_map_it->begin();o1_it != po1_map_it->end(); ++o1_it) {
+				deliverThePartinTray((*o1_it));
+				removeItemFromOrderPart((*o1_it));
+				deleteTheOrderPart((*o1_it));
+			}
+		}
+	
+	}
+
+	auto arm2OrderParts = env_->getArm2OrderParts;
+	for((auto o2_vec_it = arm1OrderParts.begin();o2_vec_it != arm1OrderParts.end(); ++o2_vec_it) {
+	
+		for (auto o2_map_it = po1_vec_it->begin();o2_map_it != po1_vec_it->end(); ++o2_map_it) {
+
+			for(auto o2_it = po1_map_it->begin();o2_it != po1_map_it->end(); ++o2_it) {
+				deliverThePartinTray((*o2_it));
+				removeItemFromOrderPart((*o2_it));
+				deleteTheOrderPart((*o2_it));
+			}
+		}
+}
+}

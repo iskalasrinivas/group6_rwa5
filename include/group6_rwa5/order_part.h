@@ -70,10 +70,12 @@ class OrderPart {
 
 	void setPartType(std::string);
 	void setCurrentPose(geometry_msgs::Pose);
+	void setEndPose(geometry_msgs::Pose);
 	const std::string getPartType();
 	const geometry_msgs::Pose getEndPose();
 	const geometry_msgs::Pose getTrayPose();
 	const geometry_msgs::Pose getCurrentPose();
 	void worldTransformation();
+	std::string getTrayId();
 };
 #endif  // GROUP6_RWA5_ORDER_PART_H_

@@ -70,10 +70,10 @@ private:
 
 	ros::NodeHandle comp_nh_;
 	//AriacOrderManager order_manager_;
-	Environment env_;
-	SensorManager sensor_;
-	Planner planner_;
-	Executer executer_;
+	//Environment env_;
+	// SensorManager sensor_;
+	// Planner planner_;
+	// Executer executer_;
 	
 
 

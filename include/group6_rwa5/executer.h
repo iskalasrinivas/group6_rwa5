@@ -65,8 +65,8 @@ private:
 	sensor_msgs::JointState arm_2_current_joint_states_;
 	bool arm_1_has_been_zeroed_;
 	bool arm_2_has_been_zeroed_;
-	RobotController control_("arm1"); //ask saurav about arms
-	
+	RobotController arm1_; 
+	RobotController arm2_;
     Environment* env_;
 
 public:
@@ -81,8 +81,7 @@ public:
 	/// Create a JointTrajectory with all positions set to zero, and command the arm.
 	void send_arm_to_zero_state(ros::Publisher &);
 	
-	void Executor();
-
+    void Execute();
 };
 
 #endif //GROUP6_RWA5_EXECUTER_H

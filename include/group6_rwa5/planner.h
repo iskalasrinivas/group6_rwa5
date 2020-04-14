@@ -52,6 +52,7 @@ public:
     Planner(Environment *);
     ~Planner();
     void plan();
+    void target();
 
 private:
     Environment *env_;

@@ -52,7 +52,7 @@ OrderPart::OrderPart(std::string agv_id, std::string part_type, geometry_msgs::P
 	worldTransformation();
 
 }
-OrderPart::OrderPart(){}
+OrderPart::OrderPart(): tfListener(tfBuffer){}
 OrderPart::~OrderPart() {}
 
 void OrderPart::setPartType(std::string part_type) {
@@ -61,6 +61,10 @@ void OrderPart::setPartType(std::string part_type) {
 
 void OrderPart::setCurrentPose(geometry_msgs::Pose pose) {
 	current_pose_ = pose;
+}
+
+void OrderPart::setEndPose(geometry_msgs::Pose pose){
+	end_pose_ = pose;
 }
 
 const std::string OrderPart::getPartType() {
@@ -77,6 +81,10 @@ const geometry_msgs::Pose OrderPart::getTrayPose() {
 
 const geometry_msgs::Pose OrderPart::getCurrentPose() {
 	return current_pose_;
+}
+
+std::string OrderPart::getTrayId(){
+	return tray_id;
 }
 
 void OrderPart::worldTransformation() {

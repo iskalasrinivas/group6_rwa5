@@ -56,9 +56,9 @@ Planner::~Planner(){};
 
 void Planner::plan()
 {
-    // auto sorted_BinParts = environment->getSortedBinParts();
-    auto agv1_OrderParts = environment->getAgv1OrderParts(); //  remove from tray, displace, bin to tray p1(mp X -> ep)
-    auto agv2_OrderParts = environment->getAgv2OrderParts(); // p1(sp -> mp)
+    // auto sorted_BinParts = environment->getSortedBinParts();  std::vector<std::map<std::string, std::vector<OrderPart*>>>
+    auto agv1_OrderParts = env_->getArm1OrderParts(); //  remove from tray, displace, bin to tray p1(mp X -> ep)
+    auto agv2_OrderParts = env_->getArm2OrderParts(); // p1(sp -> mp)
 
     /// Checking if anything needs to be added to arm2 to support arm1
 
@@ -66,23 +66,24 @@ void Planner::plan()
 
     for (auto ship_it = agv1_OrderParts->begin(); ship_it != agv1_OrderParts->end(); ++ship_it) {
         
-        auto part_type = ship_it->first;
+        auto part_type = (*ship_it).first;
 
-        for (auto ord_it = ship_it->second.begin(); ord_it != ship_it->second.end(); ++ord_it) {
-            
-            if((*ord_it)->getCurrentPose().position.y > 1.5) { // order part is not reachable To-DO ----- make sure value is right
+        for (auto ord_it = (*ship_it).second.begin(); ord_it != (*ship_it).second.end(); ++ord_it) {
+
+            if ((*ord_it)->getCurrentPose().position.y < -1.5)
+            { // order part is not reachable To-DO ----- make sure value is right
                 // add a copy of this part to agv2 order parts
                 OrderPart* part = new OrderPart();
                 part->setPartType((*ord_it)->getPartType());
                 part->setCurrentPose((*ord_it)->getCurrentPose());
-                part->setEndPose(middle pose); // TO-DO ---- set ommon bin pose so that arm1 can pick it from there.
-                (*ord_it)->setCurrentPose(middle_pose);
+                part->setEndPose(common_pose_); // TO-DO ---- set ommon bin pose so that arm1 can pick it from there.
+                (*ord_it)->setCurrentPose(common_pose_);
                 // add it to the beginning of agv2 as a new shipment
-                if(new_shipment_to_agv2[part_type].count()) {
+                if(new_shipment_to_agv2.count(part_type)) {
                     new_shipment_to_agv2[part_type].emplace_back(part);
                 }
                 else {
-                    new_shipment_to_agv2[part_type] = std::vector<OrderPart *>(part);
+                    new_shipment_to_agv2[part_type] = std::vector<OrderPart *>vec{part};
                 }
             }
         }
@@ -105,12 +106,12 @@ void Planner::plan()
         for (auto ord_it = ship_it->second.begin(); ord_it != ship_it->second.end(); ++ord_it)
         {
 
-            if ((*ord_it)->getCurrentPose().position.y > 1.5) { // order part is not reachable  To-DO ----- make sure value is right
+            if ((*ord_it)->getCurrentPose().position.y < 0.5) { // order part is not reachable  To-DO ----- make sure value is right
                 // add a copy of this part to agv2 order parts
                 OrderPart *part = new OrderPart();
                 part->setPartType((*ord_it)->getPartType());
                 part->setCurrentPose((*ord_it)->getCurrentPose());
-                part->setEndPose(middle pose); // TO-DO ---- set ommon bin pose so that arm1 can pick it from there.
+                part->setEndPose(middle_pose); // TO-DO ---- set ommon bin pose so that arm1 can pick it from there.
                 (*ord_it)->setCurrentPose(middle_pose);
                 // add it to the beginning of agv2 as a new shipment
                 if (new_shipment_to_agv1[part_type].count())
@@ -127,8 +128,8 @@ void Planner::plan()
 
     if (new_shipment_to_agv1.size())
     {
-        auto it = agv1_OrderParts.begin();
-        agv2_OrderParts.insert(it, new_shipment_to_agv1);
+        auto it = agv1_OrderParts->begin();
+        agv2_OrderParts->insert(it, new_shipment_to_agv1);
     }
 
         // for (const auto &part : agv1_OrderParts)
@@ -137,7 +138,7 @@ void Planner::plan()
         //     auto vec_poses = (*sorted_BinParts)[part_type];
         //     for (auto pose : vec_poses)
         //     {
-        //         if (pose.position.y > 1.5)
+        //         if (pose.position.y < -1.5)
         //             {
         //                 arm2_Vector = part->second;
         //             }
@@ -153,7 +154,7 @@ void Planner::plan()
     //     auto vec_poses = (*sorted_BinParts)part_type];
     //     for (const auto &part : agv1_OrderParts)
     //     {
-    //         if (pose.position.y < 0.5)
+    //         if (pose.position.y > 1.5)
     //             {
     //                 arm1_Vector = part->second;
     //             }
@@ -163,26 +164,26 @@ void Planner::plan()
     //         }
     //     }
     // }
-    target();
+    // target();
     }
 
 void Planner::target(){
-    for (const auto &part : arm1_Vector)
+    for (auto part : arm1_Vector)
     {
-        if(part->tray_id == "agv1")
+        if(part.getTrayId() == "agv1")
         {
-            arm1_.moveToTarget(part->getTrayPose());
+            arm1_.moveToTarget(part.getTrayPose());
         } else
         {
             arm1_.moveToTarget(common_pose_);
         }
     }
 
-    for (const auto &part : arm2_Vector)
+    for (auto part : arm2_Vector)
     {
-        if (part->tray_id == "agv2")
+        if (part.getTrayId() == "agv2")
         {
-            arm2_.moveToTarget(part->getTrayPose());
+            arm2_.moveToTarget(part.getTrayPose());
         }
         else
         {
