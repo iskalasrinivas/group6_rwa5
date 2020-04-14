@@ -40,8 +40,8 @@
  */
 
 #include <order_part.h>
-#include<environment.h>
-#include<executer.h>
+#include <environment.h>
+#include <executer.h>
 #include <robot_controller.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -117,3 +117,17 @@ void Executer::send_arm_to_zero_state(ros::Publisher & joint_trajectory_publishe
 	ROS_INFO_STREAM("Sending command:\n" << msg);
 	joint_trajectory_publisher.publish(msg);
 }
+
+void Executer::Executor()
+{
+	auto order_part = env_->getImmediateGoal(); 
+	if(!order_part.empty())
+	{
+		auto src_pose = order_part->getCurrentPose();
+		auto goal_pose = order_part->getEndPose();
+		control_.moveToTarget(src_pose); //ask saurav whether the planner has to use waypoints or not
+		control_.GripperToggle(True);
+		if(control_.isPartAttached()){
+		   control_.moveToTarget(goal_pose);
+		}
+		control_.GripperToggle(False);

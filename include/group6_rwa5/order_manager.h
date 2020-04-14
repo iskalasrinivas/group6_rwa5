@@ -76,6 +76,8 @@ public:
     void updateAllOrder();
     void OrderCallback(const osrf_gear::Order::ConstPtr&);
     void setOrderParts(const osrf_gear::Order::ConstPtr& order_msg);
+    std::map<std::string, std::vector<OrderPart*>> getTrashParts(std::map<std::string, std::vector<geometry_msgs::Pose>>);
+    bool comparePose();
 };
 
 #endif //  GROUP6_RWA5_ORDER_MANAGER_H_

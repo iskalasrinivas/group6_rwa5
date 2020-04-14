@@ -43,16 +43,24 @@
 
 #include <ros/ros.h>
 #include <environment.h>
-#include<order_manager.h>
-
+#include <order_manager.h>
+#include <robot_controller.h>
+#include <geometry_msgs/Pose.h>
 
 class Planner {
 public:
     Planner(Environment *);
     ~Planner();
+    void plan();
+
 private:
-    Environment * env_;
+    Environment *env_;
     OrderManager ordermanager_;
+    std::vector<OrderPart> arm2_Vector;
+    std::vector<OrderPart> arm1_Vector;
+    RobotController arm1_;
+    RobotController arm2_;
+    geometry_msgs::Pose common_pose_;
 };
 
 #endif // GROUP6_RWA5_PLANNER_H

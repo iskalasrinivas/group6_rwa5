@@ -21,3 +21,7 @@ std::map<std::string, std::vector<geometry_msgs::Pose>>* Environment::getTray1Pa
 std::map<std::string, std::vector<geometry_msgs::Pose>>* Environment::getTray2Parts(){
      return &tray2_parts;
 }
+
+OrderPart* Environment::getImmediateGoal(){
+    return &immediate_goal;
+}

@@ -64,7 +64,7 @@ class OrderPart {
 	geometry_msgs::TransformStamped tS_w_b;
 	
  public:
-
+    OrderPart();
 	OrderPart(std::string, std::string, geometry_msgs::Pose);
 	~OrderPart();
 

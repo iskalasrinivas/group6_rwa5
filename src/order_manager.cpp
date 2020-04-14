@@ -51,6 +51,13 @@ OrderManager::OrderManager(Environment *env): environment(env){
     order_= NULL;
 	order_subscriber_ = order_manager_nh_.subscribe("/ariac/orders", 10,
 			&OrderManager::OrderCallback, this);
+
+    while (!environment->isBinCameraCalled) {
+		ROS_INFO_STREAM("Bin camera is not called" << std::endl);
+	}
+	ROS_INFO_STREAM("Bin camera Called!! Starting segregating Orders." << std::endl);
+	ros::Duration(1).sleep();
+	segregateOrders();
 }
 
 OrderManager::~OrderManager() {}
@@ -60,45 +67,136 @@ void OrderManager::OrderCallback
 (const osrf_gear::Order::ConstPtr& order_msg) {
     ROS_WARN(">>>>> OrderCallback");
     setOrderParts(order_msg);
+    updateAllOrder();
         
 }
 // once the part are categorized in agv1 and agv2 we need to compare with parts
 // available in agv1 and agv2 resp and then remove the unnecessary part from the tray
 // displace the parts in tray itself and add the new parts from bin.
-void OrderManager::updateAllOrder(){
-    if(!environment->getAgv1OrderParts().empty()){
-        auto agv1_FirstOrder = *(environment->getAgv1OrderParts().begin());
-        auto r_tray1_parts = environment->getTray1Parts();
-        for(auto traypart_map : r_tray1_parts){
+void OrderManager::updateAllOrder() {
+
+    // UPDATE for AGV1
+    if(!environment->getAgv1OrderParts().empty()) {
+        auto agv1_FirstOrder = environment->getAgv1OrderParts().begin();
+        auto r_tray1_parts = *(environment->getTray1Parts());
+        // agv1_FirstOrder.second
+        for(auto traypart_map : r_tray1_parts){ // for part on tray
           auto part_type = traypart_map->first;
           auto part_vec = traypart_map->second;
-          if(agv1_FirstOrder[part_type].count) {
-            for(auto O_it = agv1_FirstOrder[part_type].begin(); O_it != agv1_FirstOrder[part_type].end(), ++O_it) {
+          if((*agv1_FirstOrder)[part_type].count()) { // If part on tray is part of order, keep part on tray if end-pose matches
+            for(auto O_it = (*agv1_FirstOrder)[part_type].begin(); O_it != (*agv1_FirstOrder)[part_type].end(), ++O_it) {
               for(auto t_it = part_vec.begin(); t_it != part_vec.end(), ++t_it) {
                   if(O_it->getEndPose == t_it->pose) {
-                      //remove this item from r_tray1_parts
+                    r_tray1_parts.erase(t_it);
+                    (*agv1_FirstOrder)[part_type].erase(O_it);
                   }
               }
+            } 
+          }
+        }
+        //upto here all the parts whose end pose are same are removed from the order and removed from tray's remove-part-list
+        std::map<std::string, std::vector<OrderPart*>> displaceParts;
+        // Here, update the pose of parts left on tray i.e.segregate them into two sections 1. trash_parts 2. tray_parts_with_different_pose
+        for (auto tray_part_it=r_tray1_parts.begin(); tray_part_it!=r_tray1_parts.end(); ++tray_part_it) {
+            auto part_type = (*tray_part_it)->first;
+            auto part_vec = (*tray_part_it)->second;
+
+            if(agv1_FirstOrder[part_type].count()) { // add it to tray_parts_with_differnt_pose
+                for(auto order_it = agv1_FirstOrder[part_type].begin(); order_it != agv1_FirstOrder[part_type].end(), ++order_it) {
+                    for(auto displace_it = part_vec.begin(); displace_it != part_vec.end(), ++displace_it) {
+                        (*order_it)->setCurrentPose(*displace_it);
+                        if(displaceParts[part_type].count()) {
+                            displaceParts[part_type].emplace_back(*order_it);
+                        }
+                        else {
+                            displaceParts[part_type] = vector<OrderPart*>(*order_it);;  
+                        }
+                        r_tray1_parts.erase(tray_part_it);
+                        (*agv1_FirstOrder)[part_type].erase(order_it);
+                   }
+                }
             }
-            
-          }
-          
-          }
-
         }
-    }
-    if(!environment->getAgv2OrderParts().empty()){
-    auto agv2_FirstOrder = *(environment->getAgv2OrderParts().begin());
-    auto tray2_parts = environment->getTray2Parts();
-    for(auto part_map : tray1_parts){
-        auto part_type = part_map->first;
-        auto part_vec = part_map->second;
-        if(part_vec.size() > agv1_OrderParts.){
 
-        }
+        std::map<std::string, std::vector<OrderPart*>> trashParts = getTrashParts(r_tray1_parts); 
+        auto  it = environment->getAgv1OrderParts().begin();
+        environment->getAgv1OrderParts()->insert(it, displaceParts);
+        environment->getAgv1OrderParts()->insert(it, trashParts);
+        
+   
     }
     
-   
+    // UPDATE FOR AGV2
+    if(!environment->getAgv2OrderParts().empty()) {
+        auto agv2_FirstOrder = environment->getAgv2OrderParts().begin();
+        auto r_tray2_parts = *(environment->getTray2Parts());
+        // agv2_FirstOrder.second
+        for(auto traypart_map : r_tray2_parts){ // for part on tray
+          auto part_type = traypart_map->first;
+          auto part_vec = traypart_map->second;
+          if((*agv2_FirstOrder)[part_type].count()) { // If part on tray is part of order, keep part on tray if end-pose matches
+            for(auto O_it = (*agv2_FirstOrder)[part_type].begin(); O_it != (*agv2_FirstOrder)[part_type].end(), ++O_it) {
+              for(auto t_it = part_vec.begin(); t_it != part_vec.end(), ++t_it) {
+                  if(O_it->getEndPose == t_it->pose) {
+                    r_tray2_parts.erase(t_it);
+                    (*agv2_FirstOrder)[part_type].erase(O_it);
+                  }
+              }
+            } 
+          }
+        }
+        //upto here all the parts whose end pose are same are removed from the order and removed from tray's remove-part-list
+        std::map<std::string, std::vector<OrderPart*>> displaceParts;
+        // Here, update the pose of parts left on tray i.e.segregate them into two sections 1. trash_parts 2. tray_parts_with_different_pose
+        for (auto tray_part_it=r_tray2_parts.begin(); tray_part_it!=r_tray2_parts.end(); ++tray_part_it) {
+            auto part_type = (*tray_part_it)->first;
+            auto part_vec = (*tray_part_it)->second;
+
+            if(agv2_FirstOrder[part_type].count()) { // add it to tray_parts_with_differnt_pose
+                for(auto order_it = agv2_FirstOrder[part_type].begin(); order_it != agv2_FirstOrder[part_type].end(), ++order_it) {
+                    for(auto displace_it = part_vec.begin(); displace_it != part_vec.end(), ++displace_it) {
+                        (*order_it)->setCurrentPose(*displace_it);
+                        if(displaceParts[part_type].count()) {
+                            displaceParts[part_type].emplace_back(*order_it);
+                        }
+                        else {
+                            displaceParts[part_type] = vector<OrderPart*>(*order_it);;  
+                        }
+                        r_tray2_parts.erase(tray_part_it);
+                        (*agv2_FirstOrder)[part_type].erase(order_it);
+                   }
+                }
+            }
+        }
+
+        std::map<std::string, std::vector<OrderPart*>> trashParts = getTrashParts(r_tray2_parts); 
+        auto  it = environment->getAgv2OrderParts().begin();
+        environment->getAgv2OrderParts()->insert(it, displaceParts);
+        environment->getAgv2OrderParts()->insert(it, trashParts);
+    }
+}
+
+
+std::map<std::string, std::vector<OrderPart*>> OrderManager::getTrashParts(std::map<std::string, std::vector<geometry_msgs::Pose>> r_tray1_parts) {
+    
+    std::map<std::string, std::vector<OrderPart*>> return_var;
+
+    for(auto it=r_tray1_parts.begin(); it!= r_tray1_parts.end(); ++it) {
+        
+        auto part_type = it->first;
+        
+        return_var[part_type] = std::vector<OrderPart*>();
+
+        for(auto pose_it=it->second.begin(); pose_it!=it->second.end(); ++pose_it) {
+
+            OrderPart* trash_part = new OrderPart();
+            trash_part->setPartType(part_type);
+            trash_part->setCurrentPose(*pose_it);
+            trash_part->setEndPose(*end_pose); // TO-DO --- DEFINE END_POSE   
+            return_var[part_type].emplace_back(trash_part);
+        }   
+    }
+    return return_var;
 }
 
 void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr& order_msg) {
@@ -140,4 +238,44 @@ void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr& order_msg) {
             }
             
         }
+}
+
+
+
+void OrderManager::segregateOrders() {
+
+	for (const auto &orderPart : all_orderParts) {
+		auto part_type = orderPart.first;
+//		ROS_INFO_STREAM( "order Part type :"<< part_type);
+		auto oVecPart =  orderPart.second;
+		if(sorted_all_binParts->count(part_type)) {
+			auto bin_vec = (*sorted_all_binParts)[part_type];
+//			ROS_INFO_STREAM( "order PArt type"<< bin_vec.front());
+			if(bin_vec.size() >= orderPart.second.size()) {
+				auto opart_it = oVecPart.begin();
+				auto bin_part = bin_vec.begin();
+
+				for(opart_it = oVecPart.begin(), bin_part = bin_vec.begin(); opart_it != oVecPart.end();++opart_it, ++bin_part) {
+					(*opart_it)->setCurrentPose(*bin_part);
+//					ROS_WARN_STREAM( "order Type and Current Pose from bin"<<(*opart_it)->getPartType() << " " << (*opart_it)->getCurrentPose());
+				}
+//				setCurrentPose(oVecPart, (*sorted_all_binParts)[part_type]);
+				bin_order_parts.insert({part_type, oVecPart});
+			} else {
+				ROS_INFO_STREAM("Sufficient Parts not available on bin lesser parts:have to be coded !!");
+			}
+		} else {
+			conveyor_order_parts.insert({part_type, oVecPart});
+		}
+	}
+
+	order_segregated = true;
+
+
+	for (auto it1_part : bin_order_parts) {
+		ROS_INFO_STREAM("Parts to be picked from Bin :  Type of Part " << it1_part.first << ", Num of Parts : "<< it1_part.second.size()<<std::endl);
+	}
+	for (auto it2_part : conveyor_order_parts) {
+		ROS_INFO_STREAM("Parts to be picked from Belt : Type of Part " << it2_part.first << ", Num of Parts : "<< it2_part.second.size()<<std::endl);
+	}
 }

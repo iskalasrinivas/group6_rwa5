@@ -52,6 +52,7 @@ OrderPart::OrderPart(std::string agv_id, std::string part_type, geometry_msgs::P
 	worldTransformation();
 
 }
+OrderPart::OrderPart(){}
 OrderPart::~OrderPart() {}
 
 void OrderPart::setPartType(std::string part_type) {
