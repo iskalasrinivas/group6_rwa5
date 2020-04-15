@@ -41,7 +41,8 @@
 
 #include <tf/transform_listener.h>
 #include <tf2_ros/transform_broadcaster.h>
-
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/LinearMath/Quaternion.h>
 #include <robot_controller.h>
 
 /**
@@ -80,13 +81,17 @@ RobotController::RobotController(std::string arm_id) :
 	robot_tf_listener_.lookupTransform("/"+arm_id_+"_linear_arm_actuator", "/"+arm_id_+"_ee_link",
 									   ros::Time(0), robot_tf_transform_);
 
-	fixed_orientation_.x = robot_tf_transform_.getRotation().x();
-	fixed_orientation_.y = robot_tf_transform_.getRotation().y();
-	fixed_orientation_.z = robot_tf_transform_.getRotation().z();
-	fixed_orientation_.w = robot_tf_transform_.getRotation().w();
 
-	tf::quaternionMsgToTF(fixed_orientation_, q);
-	tf::Matrix3x3(q).getRPY(roll_def_, pitch_def_, yaw_def_);
+    tf2::Quaternion myQuaternion;
+    myQuaternion.setRPY( 0.0, 0.0, 1.5707);
+
+	fixed_orientation_.x = myQuaternion.x();
+	fixed_orientation_.y = myQuaternion.y();
+	fixed_orientation_.z = myQuaternion.z();
+	fixed_orientation_.w = myQuaternion.w();
+
+	// tf::quaternionMsgToTF(fixed_orientation_, q);
+	// tf::Matrix3x3(q).getRPY(roll_def_, pitch_def_, yaw_def_);
 
 	//	end__joint_position_ = {1.5, 1.5, -0.9, 1.9, 3.1, -1.59, 0.126};
 
