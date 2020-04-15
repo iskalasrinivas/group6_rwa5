@@ -308,6 +308,51 @@ void Planner::plan() {
         }
     }
 }
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
 
     
 

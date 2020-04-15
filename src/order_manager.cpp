@@ -115,10 +115,6 @@ void OrderManager::updateAllOrder()
                     for (auto displace_it = part_vec.begin(); displace_it != part_vec.end(); ++displace_it)
                     {
                         (*order_it)->setCurrentPose(*displace_it);
-    }
-
-    // UPDATE FOR AGV2
-    if (!environment->getArm2OrderParts()->empty())
     {
         auto agv2_FirstOrder = environment->getArm2OrderParts()->begin();
         auto r_tray2_parts = *(environment->getTray2Parts());
