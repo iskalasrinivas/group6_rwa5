@@ -78,8 +78,7 @@ public:
     void setOrderParts(const osrf_gear::Order::ConstPtr& order_msg);
     std::map<std::string, std::vector<OrderPart*>> getTrashParts(std::map<std::string, std::vector<geometry_msgs::Pose>>);
     bool comparePose();
-    void updateAllOrderPickupLocation();
-    void updatePickupLocation(std::vector<std::map<std::string, std::vector<OrderPart *>>> *);
+    void updatePickupLocation();
 };
 
 #endif //  GROUP6_RWA5_ORDER_MANAGER_H_

@@ -25,7 +25,7 @@
 	"objects" : 
 	[
 		{
-			"jsonFile" : "codemodel-v2-04df5fbe1a18c54767c7.json",
+			"jsonFile" : "codemodel-v2-2e6f7ef75f5fc2081825.json",
 			"kind" : "codemodel",
 			"version" : 
 			{
@@ -43,7 +43,7 @@
 			}
 		},
 		{
-			"jsonFile" : "cmakeFiles-v1-4b99888258722239e25d.json",
+			"jsonFile" : "cmakeFiles-v1-c4f8b4aff9fedc560daf.json",
 			"kind" : "cmakeFiles",
 			"version" : 
 			{
@@ -68,7 +68,7 @@
 			},
 			"cmakeFiles-v1" : 
 			{
-				"jsonFile" : "cmakeFiles-v1-4b99888258722239e25d.json",
+				"jsonFile" : "cmakeFiles-v1-c4f8b4aff9fedc560daf.json",
 				"kind" : "cmakeFiles",
 				"version" : 
 				{
@@ -78,13 +78,79 @@
 			},
 			"codemodel-v2" : 
 			{
-				"jsonFile" : "codemodel-v2-04df5fbe1a18c54767c7.json",
+				"jsonFile" : "codemodel-v2-2e6f7ef75f5fc2081825.json",
 				"kind" : "codemodel",
 				"version" : 
 				{
 					"major" : 2,
 					"minor" : 0
 				}
+			}
+		},
+		"client-vscode-cmake-lite" : 
+		{
+			"query.json" : 
+			{
+				"requests" : 
+				[
+					{
+						"kind" : "codemodel",
+						"version" : 
+						[
+							{
+								"major" : 2
+							}
+						]
+					},
+					{
+						"kind" : "cache",
+						"version" : 
+						[
+							{
+								"major" : 2
+							}
+						]
+					},
+					{
+						"kind" : "cmakeFiles",
+						"version" : 
+						[
+							{
+								"major" : 1
+							}
+						]
+					}
+				],
+				"responses" : 
+				[
+					{
+						"jsonFile" : "codemodel-v2-2e6f7ef75f5fc2081825.json",
+						"kind" : "codemodel",
+						"version" : 
+						{
+							"major" : 2,
+							"minor" : 0
+						}
+					},
+					{
+						"jsonFile" : "cache-v2-ae16442d688a78bdde68.json",
+						"kind" : "cache",
+						"version" : 
+						{
+							"major" : 2,
+							"minor" : 0
+						}
+					},
+					{
+						"jsonFile" : "cmakeFiles-v1-c4f8b4aff9fedc560daf.json",
+						"kind" : "cmakeFiles",
+						"version" : 
+						{
+							"major" : 1,
+							"minor" : 0
+						}
+					}
+				]
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 /**
- * @file      src/main.cpp
- * @brief     Source file for main function
+ * @file      include/logical_camera_sensor.h
+ * @brief     Header file for Sensor
  * @author    Saurav Kumar
  * @author    Raja Srinivas
  * @author    Sanket Acharya
@@ -38,36 +38,29 @@
  *OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <osrf_gear/AGVControl.h>
-#include <ros/ros.h>
-#include <std_srvs/Trigger.h>
-#include <tf/tf.h>
-#include <iostream>
-#include "order_manager.h"
-//#include "../include/group6_rwa4/competition.h"
-#include "competition.h"
-//#include "../include/group6_rwa4/sensor.h"
 
+#ifndef GROUP6_RWA5_QUALITY_CAMERA_SENSOR_H_
+#define GROUP6_RWA5_QUALITY_CAMERA_SENSOR_H_
 
-int main(int argc, char **argv) {
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <osrf_gear/LogicalCameraImage.h>
+#include <environment.h>
 
-	ROS_INFO("Starting main function");
-	ros::init(argc, argv, "ariac_manager_node");
-	ros::AsyncSpinner async_spinner(0);
-	async_spinner.start();
+class QualityCameraSensor {
 
-//	ros::NodeHandle node_handler;
-//	ros::Duration(20).sleep();
+private:
 
-//
-	Competition mycompetition;
-//
-//	while(ros::ok()){
-//		ROS_INFO_STREAM("HELLO");
-//		std::cout << "OK";
-	ros::waitForShutdown();
-//	}
+ros::NodeHandle quality_nh_;
+ros::Subscriber quality_subscriber_;
+Environment * environment_;
+std::string cam_name;
+bool is_faulty;
+public:
+	QualityCameraSensor(std::string, Environment *);
+	~QualityCameraSensor();
+	std::string getCameraName(std::string);
+	void qualityControlSensorCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
+	bool isPartFaulty();
+};
 
-
-	return 0;
-}
+#endif // GROUP6_RWA5_QUALITY_CAMERA_SENSOR_H_

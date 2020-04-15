@@ -57,8 +57,8 @@
 #include <osrf_gear/Order.h>
 #include <osrf_gear/Proximity.h>
 #include <trajectory_msgs/JointTrajectory.h>
-#include <sensor_manager.h>
 #include <environment.h>
+#include <sensor_manager.h>
 #include <executer.h>
 #include <planner.h>
 
@@ -70,17 +70,18 @@ private:
 
 	ros::NodeHandle comp_nh_;
 	//AriacOrderManager order_manager_;
-	//Environment env_;
-	// SensorManager sensor_;
-	// Planner planner_;
-	// Executer executer_;
-	
+	ros::AsyncSpinner async_spinner;
+	Environment env_;
+	SensorManager sensor_;
+	Planner planner_;
+	Executer executer_;
+
 
 
 	std::string competition_state_;
 	double current_score_;
-	
-//	osrf_gear::Order order_;
+
+	//	osrf_gear::Order order_;
 	ros::Subscriber current_score_subscriber;
 
 	// Subscribe to the '/ariac/competition_state' topic.
@@ -91,7 +92,7 @@ public:
 	~Competition();
 	/// Called when a new message is received.
 	void current_score_callback(const std_msgs::Float32::ConstPtr & );
-	
+
 	/// Called when a new message is received.
 	void competition_state_callback(const std_msgs::String::ConstPtr & );
 

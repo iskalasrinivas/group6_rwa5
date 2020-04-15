@@ -72,6 +72,7 @@
 
 class RobotController {
 private:
+	std::string arm_id_;
 	ros::NodeHandle robot_controller_nh_;
 	moveit::planning_interface::MoveGroupInterface::Options robot_controller_options;
 	ros::ServiceClient gripper_client_;
@@ -119,6 +120,7 @@ private:
 	int counter_;
 	bool gripper_state_, drop_flag_;
 	bool is_at_qualitySensor;
+	bool is_faulty;
 
 public:
 	explicit RobotController(std::string);
@@ -150,14 +152,12 @@ public:
 	void GoToQualityCameraFromBin();
 	void moveToTargetinPieces(geometry_msgs::Pose final_pose);
 	void collisionAvoidance();
-	
-    void pickPart(const geometry_msgs::Pose& part_pose);
-	void deliverPart(const geometry_msgs::Pose& part_pose)
-	void deliverThePartinBin(OrderPart * oPart);
- 
-}
 
+	void pickPart(const geometry_msgs::Pose& part_pose);
+	void deliverPart(const geometry_msgs::Pose& part_pose);
+	void dropInAGV();
+	// void deliverThePartinBin(OrderPart * oPart);
 
-
+	// bool isPartfaulty();
 };
 #endif // GROUP6_RWA4_ROBOT_CONTROLLER_H_

@@ -53,6 +53,7 @@
 #include <sensor_msgs/Range.h>
 #include <trajectory_msgs/JointTrajectory.h>
 #include <transformer.h>
+#include <robot_controller.h>
 
 
 
@@ -85,10 +86,12 @@ public:
 
 	void deliverThePartinBin(OrderPart * oPart);
 
-	void  updatePickupCoordinate(OrderPart * oPart);
+	void updatePickupCoordinate(OrderPart * oPart);
 
 	void updateDeliveryCoordinate(OrderPart * oPart);
 	
+	void updatePickPose(OrderPart* );
+
     void Execute();
 };
 

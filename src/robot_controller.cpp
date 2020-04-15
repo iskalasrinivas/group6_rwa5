@@ -49,12 +49,13 @@
  * Class attributes are initialized in the constructor init list
  * You can instantiate another robot by passing the correct parameter to the constructor
  */
-RobotController::RobotController(std::string arm_id) : robot_controller_nh_("/ariac/" + arm_id), robot_controller_options("manipulator",
-																														  "/ariac/" + arm_id + "/robot_description", robot_controller_nh_),
-													   robot_move_group_(robot_controller_options)
-{
+RobotController::RobotController(std::string arm_id) :
+	arm_id_(arm_id), 
+	robot_controller_nh_("/ariac/" + arm_id), 
+	robot_controller_options("manipulator", "/ariac/" + arm_id + "/robot_description", robot_controller_nh_),
+	robot_move_group_(robot_controller_options) {
 
-	ROS_WARN(">>>>> RobotController");
+	ROS_WARN_STREAM(">>>>> RobotController : " << arm_id_);
 
 	// setting parameters of planner
 	robot_move_group_.setPlanningTime(20);
@@ -64,15 +65,23 @@ RobotController::RobotController(std::string arm_id) : robot_controller_nh_("/ar
 	robot_move_group_.setMaxAccelerationScalingFactor(0.9);
 	// robot_move_group_.setEndEffector("moveit_ee");
 	robot_move_group_.allowReplanning(true);
-	collisionAvoidance();
-	home_joint_pose_ = {0.1, 3.14, -2.7, -1.0, 2.1, -1.59, 0.126};
-	offset_ = 0.025;
-
+	// collisionAvoidance();
+	if(arm_id_ == "arm_1") {
+		home_joint_pose_ = {0.1, 3.14, -2.7, -1.0, 2.1, -1.59, 0.126};
+		quality_cam_joint_position_ = {1.18, 1.26, -0.38, 1.13, 2.26, -1.51, 0.0};
+		offset_ = 0.025;
+	} else if(arm_id_ == "arm_2") {
+		home_joint_pose_ = {-1.5, 3.14, -2.7, -1.0, 2.1, -1.59, 0.126};
+		quality_cam_joint_position_ = {};
+		offset_ = 0.025;
+	}
 	//--topic used to get the status of the gripper
 	gripper_subscriber_ = gripper_nh_.subscribe(
 		"/ariac/arm1/gripper/state", 10, &RobotController::GripperCallback, this);
 
+	ROS_INFO_STREAM("Going to home Pose: "  << arm_id_);
 	SendRobotHome();
+	
 
 	robot_tf_listener_.waitForTransform("arm1_linear_arm_actuator", "arm1_ee_link",
 										ros::Time(0), ros::Duration(10));
@@ -123,26 +132,37 @@ RobotController::RobotController(std::string arm_id) : robot_controller_nh_("/ar
 	counter_ = 0;
 	drop_flag_ = false;
 
-	static_bin_pose.position.x = -0.20;
-	static_bin_pose.position.y = 0.0;
-	static_bin_pose.position.z = 0.95;
-	static_bin_pose.orientation = fixed_orientation_;
+	
 	// r: 2.392647, p:1.438845, y:0.522735;
-	if (arm_id == "arm1")
-	{
+	if (arm_id == "arm_1") {
+		static_bin_pose.position.x = -0.20;
+		static_bin_pose.position.y = 0.0;
+		static_bin_pose.position.z = 0.95;
+		static_bin_pose.orientation = fixed_orientation_;
+
 		quality_static_pose.position.x = 0.19;
 		quality_static_pose.position.y = 3.25;
 		quality_static_pose.position.z = 1.15;
 		quality_static_pose.orientation = fixed_orientation_;
+
 		quality_cam_joint_position_ = {1.18, 1.26, -0.38, 1.13, 2.26, -1.51, 0.0};
+
 		trash_bin_joint_position_ = {1.18, 3.02, -0.63, -2.01, 3.52, -1.51, 0.0};
 	}
-	else if(arm_id == "arm2"){
+	else if(arm_id == "arm_2"){
+
+		static_bin_pose.position.x = -0.20;
+		static_bin_pose.position.y = 0.0;
+		static_bin_pose.position.z = 0.95;
+		static_bin_pose.orientation = fixed_orientation_;
+
 		quality_static_pose.position.x = 0.19;
 		quality_static_pose.position.y = 3.25;
 		quality_static_pose.position.z = 1.15;
 		quality_static_pose.orientation = fixed_orientation_;
+
 		quality_cam_joint_position_ = {1.18, 1.26, -0.38, 1.13, 2.26, -1.51, 0.0};
+
 		trash_bin_joint_position_ = {1.18, 3.02, -0.63, -2.01, 3.52, -1.51, 0.0};
 	}
 }
@@ -167,8 +187,7 @@ bool RobotController::Planner()
 	return plan_success_;
 }
 
-void RobotController::collisionAvoidance()
-{
+void RobotController::collisionAvoidance() {
 	namespace rvt = rviz_visual_tools;
 	moveit_visual_tools::MoveItVisualTools visual_tools("arm1");
 	visual_tools.deleteAllMarkers();
@@ -212,8 +231,7 @@ void RobotController::collisionAvoidance()
 	visual_tools.trigger();
 }
 
-void RobotController::Execute()
-{
+void RobotController::Execute() {
 	ros::AsyncSpinner spinner(4);
 	spinner.start();
 	if (this->Planner())
@@ -230,8 +248,7 @@ void RobotController::GoToBinStaticPosition()
 	ROS_INFO_STREAM("At Bin safe Home position");
 }
 
-void RobotController::moveToTarget(geometry_msgs::Pose final_pose)
-{
+void RobotController::moveToTarget(geometry_msgs::Pose final_pose) {
 	std::vector<geometry_msgs::Pose> waypoints;
 	geometry_msgs::Pose dt_pose;
 	robot_tf_listener_.waitForTransform("world", "arm1_ee_link", ros::Time(0),
@@ -283,8 +300,7 @@ void RobotController::moveToTarget(geometry_msgs::Pose final_pose)
 	//	GoToTarget(waypoints);
 }
 
-void RobotController::moveToTargetinPieces(geometry_msgs::Pose final_pose)
-{
+void RobotController::moveToTargetinPieces(geometry_msgs::Pose final_pose) {
 	std::vector<geometry_msgs::Pose> waypoints;
 	geometry_msgs::Pose dt_pose;
 	robot_tf_listener_.waitForTransform("world", "arm1_ee_link", ros::Time(0),
@@ -546,7 +562,7 @@ void RobotController::GoToQualityCameraFromBin()
 {
 	// ros::Duration(2.0).sleep();
 	moveToTargetinPieces(quality_static_pose);
-	is_at_qualitySensor = true;
+	// is_at_qualitySensor = true;
 	// this->execute();
 	//		ros::AsyncSpinner spinner(4);
 	//		spinner.start();
@@ -568,8 +584,7 @@ void RobotController::pickPart(const geometry_msgs::Pose &part_pose)
 	target_pose.position.z += 0.1;
 	GoToTarget(target_pose);
 	GripperToggle(true);
-	if (!isPartAttached())
-	{
+	if (!isPartAttached()) {
 		while (!isPartAttached())
 		{
 			target_pose.position.z -= 0.01;
@@ -601,16 +616,20 @@ void RobotController::deliverPart(const geometry_msgs::Pose &part_pose)
 	ros::Duration(0.5).sleep();
 }
 
-void RobotController::deliverThePartinBin(OrderPart *oPart)
-{
+// void RobotController::deliverThePartinBin(OrderPart *oPart)
+// {
 
-	auto current_pose = oPart->getCurrentPose();
-	pickPart(current_pose);
+// 	auto current_pose = oPart->getCurrentPose();
+// 	pickPart(current_pose);
 
-	auto end_pose = oPart->getEndPose();
-	deliverPart(end_pose);
-}
+// 	auto end_pose = oPart->getEndPose();
+// 	deliverPart(end_pose);
+// }
 
-void RobotController::deliverThePartinTray(OrderPart *oPart) {                                       
-	
-}
+// bool RobotController::isPartfaulty() {
+// 	return is_faulty;
+// }
+
+//void RobotController::deliverThePartinTray(OrderPart *oPart) {
+//
+//}

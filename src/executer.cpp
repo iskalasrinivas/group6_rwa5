@@ -59,8 +59,6 @@ Executer::~Executer(){
 }
 
 
-
-
 // Called when a new JointState message is received.
 
 void Executer::arm_1_joint_state_callback(
@@ -133,119 +131,187 @@ void Executer::send_arm_to_zero_state(ros::Publisher & joint_trajectory_publishe
 // 		}
 // 		control_.GripperToggle(False);
 
-void  Executer::updatePickAndEndPose(OrderPart * oPart){
-      Transformer transform_("/ariac/logical_camera_4");
+// void  Executer::updatePickAndEndPose(OrderPart * oPart){
 
+// 	//set environment variable to true
+// 	env_->setBinCameraRequired(true);
+// 	ros::Duration(1.0).sleep();
 
+// 	while(! env->isAllBinCalled() ) {
+// 		ROS_INFO_STREAM("ALL BIN CAMERA IS NOT CALLED");
+// 		ros::Duration(0.1).sleep();
+// 	}
+
+// 	auto binParts = env->getAllBinParts();
+
+// 	bool flag = false;
+// 	for(auto map_it = binParts->begin(); map_it!=binParts->end(); ++map_it) {
+// 		auto part_type = map_it->first;
+// 		if(oPart->getPartType() == part_type and map_it->second.size()) { // if part_type exists in bin parts
+// 			oPart->setCurrentPose(map_it->second[0]);
+// 			flag = true;
+// 		}		
+// 	}
+
+// 	if (not flag) { // we need to pick up from conveyor belt here
+
+// 	}
+
+// 	return whether converyor or not
+// }
+
+void Executer::updatePickPose(OrderPart* order_) {
+	//  we need to search for the part type in bin parts
+	env_->setBinCameraRequired(true);
+	
+	while(! env_->isAllBinCameraCalled() ) {
+		ROS_INFO_STREAM("ALL BIN CAMERA IS NOT CALLED...Waiting...");
+		ros::Duration(0.1).sleep();
+	}
+	auto part_type = order_->getPartType();
+	
+	if (env_->isAllBinCameraCalled()) {
+		auto allbinpart = env_->getSortedBinParts(); //std::map<std::string, std::vector<geometry_msgs::Pose> >*
+		if (allbinpart->count(part_type)) {
+			auto new_pose = (*allbinpart)[part_type].back();
+			order_->setCurrentPose(new_pose);
+			env_->setBinCameraRequired(false);
+			env_->setAllBinCameraCalled(false);
+		}
+	}
 }
 
 
 void Executer::Execute() {
-	auto arm1preOrderParts = env_->getArm1PreOrderParts;
-	for((auto po1_vec_it = arm1preOrderParts.begin();po1_vec_it != arm1preOrderParts.end(); ++po1_vec_it) {
+
+	// Execute Pre-order tasks of arm1
+	std::vector<std::map<std::string, std::vector<OrderPart*>>>* arm1preOrderParts = env_->getArm1PreOrderParts(); // std::vector<std::map<std::string, std::vector<OrderPart*>>>*
+	for(auto po1_vec_it = arm1preOrderParts->begin(); po1_vec_it != arm1preOrderParts->end(); ++po1_vec_it) {
 		
 		for (auto po1_map_it = po1_vec_it->begin();po1_map_it != po1_vec_it->end(); ++po1_map_it) {
 
 			for(auto po1_it = po1_map_it->second.begin();po1_it != po1_map_it->second.end(); ++po1_it) { // pol_it is basically iterator to std::vector<OrderPart*>
-				arm2_.PickPart((*po1_it)->currentPose());
+				arm1_.pickPart((*po1_it)->getCurrentPose());
+				arm1_.GoToQualityCameraFromBin();
+				env_->setSeeQualityCamera1(true);
+				while(not env_->isQuality1Called() ) {
+					ros::Duration(0.1).sleep();
+					ROS_WARN_STREAM("Waiting for Quality Camera 1 to be called");
+				}
+				if(env_->isQualityCamera1Partfaulty()) {
+					ROS_WARN_STREAM("Part is faulty");
+					arm1_.dropInTrash();
+					updatePickPose((*po1_it)); 
+					--po1_it;
+				} else {
+					arm1_.deliverPart((*po1_it)->getEndPose());
+				}
+				env_->setSeeQualityCamera2(true);
+			}
+		}
+	}
+
+
+	// Execute Pre-order tasks of arm2
+	std::vector<std::map<std::string, std::vector<OrderPart*>>>* arm2preOrderParts = env_->getArm2PreOrderParts();
+	for(auto po2_vec_it = arm2preOrderParts->begin(); po2_vec_it != arm2preOrderParts->end(); ++po2_vec_it) {
+	
+		for (auto po2_map_it = po2_vec_it->begin(); po2_map_it != po2_vec_it->end(); ++po2_map_it) {
+
+			for(auto po2_it = po2_map_it->second.begin();po2_it != po2_map_it->second.end(); ++po2_it) {
+				arm2_.pickPart((*po2_it)->getCurrentPose());
 				arm2_.GoToQualityCameraFromBin();
-				if(arm2_.isAtQualitySensor()){
-					if(arm2_.is_faulty) {
-						ROS_WARN_STREAM("Part is faulty");
-						arm2_.bin_part_faulty =true;
-						arm2_.dropInTrash();
-						UpdatePickPose((*po1_it));
-						--po1_it;
-					} else {
-						arm2_.deliverThePartinBin((*po1_it)->EndPose());
-						// po1_map_it.erase(po1_it);
-						// updatePickAndEndPose((*po1_it));
-					}
+				env_->setSeeQualityCamera2(true);
+				while(not env_->isQuality2Called() ) {
+					ros::Duration(0.1).sleep();
+					ROS_WARN_STREAM("Waiting for Quality Camera 2 to be called");
 				}
+				if(env_->isQualityCamera2Partfaulty()) {
+					ROS_WARN_STREAM("Part is faulty");
+					arm2_.dropInTrash();
+					updatePickPose((*po2_it));
+					--po2_it;
+				} else {
+					arm2_.deliverPart((*po2_it)->getEndPose());
+				}
+				env_->setSeeQualityCamera2(false);
 			}
 		}
 	}
 
-	auto arm2preOrderParts = env_->getArm2PreOrderParts;
-	for((auto po2_vec_it = arm1preOrderParts.begin();po2_vec_it != arm1preOrderParts.end(); ++po2_vec_it) {
-	
-		for (auto po2_map_it = po1_vec_it->begin();po2_map_it != po1_vec_it->end(); ++po2_map_it) {
-
-			for(auto po2_it = po1_map_it->second.begin();po2_it != po1_map_it->second.end(); ++po2_it) {
-				arm1_.PickPart((*po2_it)->currentPose());
-				arm1_.GoToQualityCameraFromBin();
-				if(arm1_.isAtQualitySensor()){
-					if(arm1_.is_faulty) {
-						ROS_WARN_STREAM("Part is faulty");
-						arm1_.bin_part_faulty =true;
-						arm1_.dropInTrash();
-						UpdatePickPose((*po2_it));
-						--po2_it;
-					} else {
-						arm1_.deliverThePartinBin((*po1_it));
-						// po1_map_it.erase(po1_it);
-						// updatePickAndEndPose((*po1_it));
-					}
-				}
-			}
-		}
-	}
-
-	auto arm1OrderParts = env_->getArm1OrderParts;
-	for((auto o1_vec_it = arm1OrderParts.begin();o1_vec_it != arm1OrderParts.end(); ++o1_vec_it) {
+	auto arm1OrderParts = env_->getArm1OrderParts(); // std::vector<std::map<std::string, std::vector<OrderPart* > > >*
+	for(auto o1_vec_it = arm1OrderParts->begin(); o1_vec_it != arm1OrderParts->end(); ++o1_vec_it) {
 		
-		for (auto o1_map_it = po1_vec_it->begin();o1_map_it != po1_vec_it->end(); ++o1_map_it) {
+		for (auto o1_map_it = o1_vec_it->begin();o1_map_it != o1_vec_it->end(); ++o1_map_it) {
 
-			for(auto o1_it = po1_map_it->begin();o1_it != po1_map_it->end(); ++o1_it) {
-				arm1_.pickPart((*o1_it)->currentPose());
-				arm1_.GoToQualityCameraFromBin();
-	            if(arm1_.isAtQualitySensor()) {
-					if(is_faulty) {
-						ROS_WARN_STREAM("Part is faulty");
-						bin_part_faulty =true;
-						dropInTrash();
-					}
-				OrderPart* part = (*it);
-				updateFaultyPartPose(part);
-				return;
-			} else {
-				ROS_INFO_STREAM("Part is not faulty");
-				ROS_INFO_STREAM("Dropping in AGV");
-				dropInAGV(end_pose);	
+			for(auto o1_it = o1_map_it->second.begin();o1_it != o1_map_it->second.end(); ++o1_it) {
 				
-				if()
-				removeItemFromOrderPart((*o1_it));
-				deleteTheOrderPart((*o1_it));
-			}
-		}
-	
-	}
-
-	auto arm2OrderParts = env_->getArm2OrderParts;
-	for((auto o2_vec_it = arm1OrderParts.begin();o2_vec_it != arm1OrderParts.end(); ++o2_vec_it) {
-	
-		for (auto o2_map_it = po1_vec_it->begin();o2_map_it != po1_vec_it->end(); ++o2_map_it) {
-
-			for(auto o2_it = po1_map_it->begin();o2_it != po1_map_it->end(); ++o2_it) {
-				arm2_.deliverThePartinTray((*o2_it));
-				removeItemFromOrderPart((*o2_it));
-				deleteTheOrderPart((*o2_it));
-			}
-		}
-}
-}
-
-
-
-
-void Executer::updateFaultyPartPose(AriacOrderPart* part){
-	if(faulty_part_ != nullptr){
-		for (auto cam_it : all_binParts) {
-			if(cam_it.second.count(part->getPartType())) {
-				part->setCurrentPose(cam_it.second[part->getPartType()].back());
-				return;
+				arm1_.pickPart((*o1_it)->getCurrentPose());
+				arm1_.GoToQualityCameraFromBin();
+				env_->setSeeQualityCamera1(true);
+				while(not env_->isQuality1Called() ) {
+					ros::Duration(0.1).sleep();
+					ROS_WARN_STREAM("Waiting for Quality Camera 1 to be called");
+				}
+				if(env_->isQualityCamera1Partfaulty()) {
+					ROS_WARN_STREAM("Part is faulty");
+					arm1_.dropInTrash();
+					updatePickPose((*o1_it));
+					--o1_it;
+				} else {
+					ROS_INFO_STREAM("Part is not faulty");
+					ROS_INFO_STREAM("Dropping in AGV");
+					arm1_.deliverPart((*o1_it)->getEndPose());						
+					// if()
+					// removeItemFromOrderPart((*o1_it));
+					// deleteTheOrderPart((*o1_it));
+				}
 			}
 		}
 	}
-	faulty_part_=nullptr;
+	
+	auto arm2OrderParts = env_->getArm2OrderParts(); // std::vector<std::map<std::string, std::vector<OrderPart* > > >*
+	
+	for(auto o2_vec_it = arm2OrderParts->begin(); o2_vec_it != arm2OrderParts->end(); ++o2_vec_it) {
+		
+		for (auto o2_map_it = o2_vec_it->begin();o2_map_it != o2_vec_it->end(); ++o2_map_it) {
+
+			for(auto o2_it = o2_map_it->second.begin();o2_it != o2_map_it->second.end(); ++o2_it) {
+				
+				arm2_.pickPart((*o2_it)->getCurrentPose());
+				arm2_.GoToQualityCameraFromBin();
+				env_->setSeeQualityCamera2(true);
+				while(not env_->isQuality2Called() ) {
+					ros::Duration(0.1).sleep();
+					ROS_WARN_STREAM("Waiting for Quality Camera 2 to be called");
+				}
+				if(env_->isQualityCamera1Partfaulty()) {
+					ROS_WARN_STREAM("Part is faulty");
+					arm2_.dropInTrash();
+					updatePickPose((*o2_it));
+					--o2_it;
+				} else {
+					ROS_INFO_STREAM("Part is not faulty");
+					ROS_INFO_STREAM("Dropping in AGV");
+					arm2_.deliverPart((*o2_it)->getEndPose());						
+					// if()
+					// removeItemFromOrderPart((*o1_it));
+					// deleteTheOrderPart((*o1_it));
+				}
+			}
+		}
+	}
 }
+
+
+// void Executer::updateFaultyPartPose(OrderPart* part){
+// 	if(faulty_part_ != nullptr){
+// 		for (auto cam_it : all_binParts) {
+// 			if(cam_it.second.count(part->getPartType())) {
+// 				part->setCurrentPose(cam_it.second[part->getPartType()].back());
+// 				return;
+// 			}
+// 		}
+// 	}
+// 	faulty_part_=nullptr;
+// }

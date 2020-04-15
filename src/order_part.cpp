@@ -50,9 +50,11 @@ OrderPart::OrderPart(std::string agv_id, std::string part_type, geometry_msgs::P
 	ROS_INFO_STREAM("New order object Created");
 	async_spinner.start();
 	worldTransformation();
-
+	ros::Duration(1.0).sleep();
 }
+
 OrderPart::OrderPart(): tfListener(tfBuffer){}
+
 OrderPart::~OrderPart() {}
 
 void OrderPart::setPartType(std::string part_type) {
@@ -87,7 +89,7 @@ geometry_msgs::Pose OrderPart::getCurrentPose() const {
 	return current_pose_;
 }
 
-geometry_msgs::Pose getMiddlePose() const {
+geometry_msgs::Pose OrderPart::getMiddlePose() const {
 	return middle_pose_;
 }
 
@@ -98,24 +100,22 @@ std::string OrderPart::getTrayId(){
 void OrderPart::worldTransformation() {
 
 	ros::Duration(2.0).sleep();
-
 	try {
 
-		if(tray_id == "agv_1"){
+		if (tray_id == "agv_1" or tray_id == "any"){
 			tS_w_b = tfBuffer.lookupTransform("world", "kit_tray_1",ros::Time(0));
 		}
 
 		else if (tray_id == "agv_2"){
 			 tS_w_b = tfBuffer.lookupTransform("world", "kit_tray_2",ros::Time(0));
 		}
-
-
+	
 	}
 	catch (tf2::TransformException &ex) {
 		ROS_WARN("exception");
 		ROS_WARN("%s", ex.what());
 	}
-
+	
 	ros::Duration(1.0).sleep();
 
 	try{
@@ -127,8 +127,8 @@ void OrderPart::worldTransformation() {
 			        ros::Duration(0.01).sleep();
 			}
 	ros::Duration(1.0).sleep();
-	ROS_INFO_STREAM("Order Object in tray frame : " << tray_pose_.position.x << "  " << tray_pose_.position.y << "  " <<tray_pose_.position.z);
-	ROS_INFO_STREAM("Order Object in world frame : " << end_pose_.position.x << "  " << end_pose_.position.y << "  " <<end_pose_.position.z);
+	// ROS_INFO_STREAM("Order  tray frame : " << tray_pose_.position.x << "  " << tray_pose_.position.y << "  " <<tray_pose_.position.z);
+	ROS_INFO_STREAM("Order End Pose: " << end_pose_.position.x << "  " << end_pose_.position.y << "  " <<end_pose_.position.z);
 
 }
 

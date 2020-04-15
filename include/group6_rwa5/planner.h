@@ -60,9 +60,9 @@ private:
     OrderManager ordermanager_;
     std::vector<OrderPart> arm2_Vector;
     std::vector<OrderPart> arm1_Vector;
-    RobotController arm1_;
-    RobotController arm2_;
-    const geometry_msgs::Pose common_pose_[4];
+//    RobotController arm1_;
+//    RobotController arm2_;
+    geometry_msgs::Pose common_pose_[4];
 };
 
 #endif // GROUP6_RWA5_PLANNER_H

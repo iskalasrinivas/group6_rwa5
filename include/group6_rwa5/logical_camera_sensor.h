@@ -52,18 +52,21 @@
 
 class LogicalCameraSensor {
 
-
 private:
 
 ros::NodeHandle logical_nh_;
+ros::AsyncSpinner async_spinner;
 ros::Subscriber logical_subscriber_;
 Transformer transform_;
 Environment * environment_;
-
+std::string cam_name;
+bool bincam_; // this is to know whether this object is a bin camera 
+bool traycam_;
 public:
-	LogicalCameraSensor(std::string, Environment *);
+	LogicalCameraSensor(std::string, Environment *, bool, bool);
 	~LogicalCameraSensor();
-
+	int getcount();
+	std::string getCameraName(std::string);
 	void logicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
 	void SortAllBinParts();
 

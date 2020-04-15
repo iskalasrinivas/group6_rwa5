@@ -55,11 +55,14 @@
 #include <trajectory_msgs/JointTrajectory.h>
 #include "competition.h"
 
-Competition::Competition() //sensor_(&env_), planner_(&env_), executer_(&env_)
-: current_score_(0) {
+Competition::Competition() 
+: async_spinner(4),
+  current_score_(0),
+  sensor_(&env_),
+  planner_(&env_),
+  executer_(&env_) {
 
 	//	manager_(&comp_nh_);
-	ros::AsyncSpinner async_spinner(4);
 	async_spinner.start();
 
 	current_score_subscriber = comp_nh_.subscribe("/ariac/current_score", 10,&Competition::current_score_callback, this);
@@ -68,11 +71,6 @@ Competition::Competition() //sensor_(&env_), planner_(&env_), executer_(&env_)
 	competition_state_subscriber = comp_nh_.subscribe("/ariac/competition_state", 10, &Competition::competition_state_callback, this);
 
 	StartCompetition();
-
-
-
-
-
 
 }
 Competition::~Competition(){
