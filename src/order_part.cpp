@@ -67,20 +67,28 @@ void OrderPart::setEndPose(geometry_msgs::Pose pose){
 	end_pose_ = pose;
 }
 
-const std::string OrderPart::getPartType() {
+void OrderPart::setMiddlePose(geometry_msgs::Pose pose){
+	middle_pose_ = pose;
+}
+
+std::string OrderPart::getPartType() const {
 	return part_type_;
 }
 
-const geometry_msgs::Pose OrderPart::getEndPose() {
+geometry_msgs::Pose OrderPart::getEndPose() const {
 	return end_pose_;
 }
 
-const geometry_msgs::Pose OrderPart::getTrayPose() {
+geometry_msgs::Pose OrderPart::getTrayPose() const {
 	return tray_pose_;
 }
 
-const geometry_msgs::Pose OrderPart::getCurrentPose() {
+geometry_msgs::Pose OrderPart::getCurrentPose() const {
 	return current_pose_;
+}
+
+geometry_msgs::Pose getMiddlePose() const {
+	return middle_pose_;
 }
 
 std::string OrderPart::getTrayId(){

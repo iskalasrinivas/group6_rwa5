@@ -10,8 +10,10 @@ class SensorManager{
     Environment * env_;
     LogicalCameraSensor lcamera_bin1;
     LogicalCameraSensor lcamera_bin2;
-    LogicalCameraSensor lcamera_bin3;
+    LogicalCameraSensor lcamera_common_bin;
     LogicalCameraSensor lcamera_bin4;
+    LogicalCameraSensor lcamera_bin5;
+    LogicalCameraSensor lcamera_bin6;
     LogicalCameraSensor lcamera_agv1;
     LogicalCameraSensor lcamera_agv2;
 

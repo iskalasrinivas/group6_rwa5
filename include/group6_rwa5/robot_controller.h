@@ -67,6 +67,8 @@
 
 #include <osrf_gear/VacuumGripperControl.h>
 #include <osrf_gear/VacuumGripperState.h>
+#include <order_part.h>
+
 
 class RobotController {
 private:
@@ -129,11 +131,9 @@ public:
 	void GoToTarget(const geometry_msgs::Pose&);
 	void GoToAGV(const geometry_msgs::Pose&);
 
-//	bool DropPart(geometry_msgs::Pose);
 	void GripperToggle(const bool&);
 	void GripperCallback(const osrf_gear::VacuumGripperState::ConstPtr&);
 	void GripperStateCheck(geometry_msgs::Pose);
-//	bool PickPart(geometry_msgs::Pose&);
 	bool isPartAttached();
 	bool isAtQualitySensor();
 	void setAtQualitySensor();
@@ -150,6 +150,12 @@ public:
 	void GoToQualityCameraFromBin();
 	void moveToTargetinPieces(geometry_msgs::Pose final_pose);
 	void collisionAvoidance();
+	
+    void pickPart(const geometry_msgs::Pose& part_pose);
+	void deliverPart(const geometry_msgs::Pose& part_pose)
+	void deliverThePartinBin(OrderPart * oPart);
+ 
+}
 
 
 

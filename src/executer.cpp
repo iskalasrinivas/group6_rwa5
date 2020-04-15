@@ -133,6 +133,12 @@ void Executer::send_arm_to_zero_state(ros::Publisher & joint_trajectory_publishe
 // 		}
 // 		control_.GripperToggle(False);
 
+void  Executer::updatePickAndEndPose(OrderPart * oPart){
+      Transformer transform_("/ariac/logical_camera_4");
+
+
+}
+
 
 void Executer::Execute() {
 	auto arm1preOrderParts = env_->getArm1PreOrderParts;
@@ -140,11 +146,22 @@ void Executer::Execute() {
 		
 		for (auto po1_map_it = po1_vec_it->begin();po1_map_it != po1_vec_it->end(); ++po1_map_it) {
 
-			for(auto po1_it = po1_map_it->begin();po1_it != po1_map_it->end(); ++po1_it) {
-				deliverThePartinBin((*po1_it));
-				removeItemFromPreOrderPart((*po1_it));
-				updatePickupCoordianate((*po1_it));
-				updateDeliveryCoordianate((*po1_it));
+			for(auto po1_it = po1_map_it->second.begin();po1_it != po1_map_it->second.end(); ++po1_it) { // pol_it is basically iterator to std::vector<OrderPart*>
+				arm2_.PickPart((*po1_it)->currentPose());
+				arm2_.GoToQualityCameraFromBin();
+				if(arm2_.isAtQualitySensor()){
+					if(arm2_.is_faulty) {
+						ROS_WARN_STREAM("Part is faulty");
+						arm2_.bin_part_faulty =true;
+						arm2_.dropInTrash();
+						UpdatePickPose((*po1_it));
+						--po1_it;
+					} else {
+						arm2_.deliverThePartinBin((*po1_it)->EndPose());
+						// po1_map_it.erase(po1_it);
+						// updatePickAndEndPose((*po1_it));
+					}
+				}
 			}
 		}
 	}
@@ -154,11 +171,22 @@ void Executer::Execute() {
 	
 		for (auto po2_map_it = po1_vec_it->begin();po2_map_it != po1_vec_it->end(); ++po2_map_it) {
 
-			for(auto po2_it = po1_map_it->begin();po2_it != po1_map_it->end(); ++po2_it) {
-				deliverThePartinBin((*po2_it));
-				removeItemFromPreOrderPart((*po2_it));
-				updatePickupCoordianate((*po2_it));
-				updateDeliveryCoordianate((*po2_it));
+			for(auto po2_it = po1_map_it->second.begin();po2_it != po1_map_it->second.end(); ++po2_it) {
+				arm1_.PickPart((*po2_it)->currentPose());
+				arm1_.GoToQualityCameraFromBin();
+				if(arm1_.isAtQualitySensor()){
+					if(arm1_.is_faulty) {
+						ROS_WARN_STREAM("Part is faulty");
+						arm1_.bin_part_faulty =true;
+						arm1_.dropInTrash();
+						UpdatePickPose((*po2_it));
+						--po2_it;
+					} else {
+						arm1_.deliverThePartinBin((*po1_it));
+						// po1_map_it.erase(po1_it);
+						// updatePickAndEndPose((*po1_it));
+					}
+				}
 			}
 		}
 	}
@@ -169,7 +197,23 @@ void Executer::Execute() {
 		for (auto o1_map_it = po1_vec_it->begin();o1_map_it != po1_vec_it->end(); ++o1_map_it) {
 
 			for(auto o1_it = po1_map_it->begin();o1_it != po1_map_it->end(); ++o1_it) {
-				deliverThePartinTray((*o1_it));
+				arm1_.pickPart((*o1_it)->currentPose());
+				arm1_.GoToQualityCameraFromBin();
+	            if(arm1_.isAtQualitySensor()) {
+					if(is_faulty) {
+						ROS_WARN_STREAM("Part is faulty");
+						bin_part_faulty =true;
+						dropInTrash();
+					}
+				OrderPart* part = (*it);
+				updateFaultyPartPose(part);
+				return;
+			} else {
+				ROS_INFO_STREAM("Part is not faulty");
+				ROS_INFO_STREAM("Dropping in AGV");
+				dropInAGV(end_pose);	
+				
+				if()
 				removeItemFromOrderPart((*o1_it));
 				deleteTheOrderPart((*o1_it));
 			}
@@ -183,10 +227,25 @@ void Executer::Execute() {
 		for (auto o2_map_it = po1_vec_it->begin();o2_map_it != po1_vec_it->end(); ++o2_map_it) {
 
 			for(auto o2_it = po1_map_it->begin();o2_it != po1_map_it->end(); ++o2_it) {
-				deliverThePartinTray((*o2_it));
+				arm2_.deliverThePartinTray((*o2_it));
 				removeItemFromOrderPart((*o2_it));
 				deleteTheOrderPart((*o2_it));
 			}
 		}
 }
+}
+
+
+
+
+void Executer::updateFaultyPartPose(AriacOrderPart* part){
+	if(faulty_part_ != nullptr){
+		for (auto cam_it : all_binParts) {
+			if(cam_it.second.count(part->getPartType())) {
+				part->setCurrentPose(cam_it.second[part->getPartType()].back());
+				return;
+			}
+		}
+	}
+	faulty_part_=nullptr;
 }

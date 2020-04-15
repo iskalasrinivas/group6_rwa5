@@ -52,6 +52,8 @@
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/Range.h>
 #include <trajectory_msgs/JointTrajectory.h>
+#include <transformer.h>
+
 
 
 class Executer
@@ -80,6 +82,12 @@ public:
 
 	/// Create a JointTrajectory with all positions set to zero, and command the arm.
 	void send_arm_to_zero_state(ros::Publisher &);
+
+	void deliverThePartinBin(OrderPart * oPart);
+
+	void  updatePickupCoordinate(OrderPart * oPart);
+
+	void updateDeliveryCoordinate(OrderPart * oPart);
 	
     void Execute();
 };

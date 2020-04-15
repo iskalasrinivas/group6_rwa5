@@ -42,20 +42,53 @@
 #include <planner.h>
 
 Planner::Planner(Environment *env) : env_(env), ordermanager_(env_), arm1_("arm1"),arm2_("arm2"){
-    common_pose_.position.x = -0.5;
-    common_pose_.position.y = 0.44;
-    common_pose_.position.z = 0.73;
-    common_pose_.orientation.x = 0;
-    common_pose_.orientation.y = 0;
-    common_pose_.orientation.z = 0;
-    common_pose_.orientation.w = 0;
-};
-Planner::~Planner(){};
+    // Initialize the common pose index 
+    common_pose_ind = 0;
+    
+    // Hardcode several common pose locations
+    common_pose_[0].position.x = -0.5;
+    common_pose_[0].position.y = 0.583010;
+    common_pose_[0].position.z = 0.724102;
+    common_pose_[0].orientation.x = 0;
+    common_pose_[0].orientation.y = 0;
+    common_pose_[0].orientation.z = 0;
+    common_pose_[0].orientation.w = 0;
+
+    common_pose_[1].position.x = -0.5;
+    common_pose_[1].position.y = 0.283010;
+    common_pose_[1].position.z = 0.724102;
+    common_pose_[1].orientation.x = 0;
+    common_pose_[1].orientation.y = 0;
+    common_pose_[1].orientation.z = 0;
+    common_pose_[1].orientation.w = 0;    
+    
+    common_pose_[2].position.x = -0.2;
+    common_pose_[2].position.y = 0.283010;
+    common_pose_[2].position.z = 0.724102;
+    common_pose_[2].orientation.x = 0;
+    common_pose_[2].orientation.y = 0;
+    common_pose_[2].orientation.z = 0;
+    common_pose_[2].orientation.w = 0;
+
+    common_pose_[3].position.x = -0.2;
+    common_pose_[3].position.y = 0.583010;
+    common_pose_[3].position.z = 0.724102;
+    common_pose_[3].orientation.x = 0;
+    common_pose_[3].orientation.y = 0;
+    common_pose_[3].orientation.z = 0;
+    common_pose_[3].orientation.w = 0;
 
 
+    // std::vector<geometry::Pose>
+    // for ()
+    // common_pose[0]
+}
 
-void Planner::plan()
-{
+Planner::~Planner()
+{}
+
+
+void Planner::plan() {
     // auto sorted_BinParts = environment->getSortedBinParts();  std::vector<std::map<std::string, std::vector<OrderPart*>>>
     auto agv1_OrderParts = env_->getArm1OrderParts(); //  remove from tray, displace, bin to tray p1(mp X -> ep)
     auto agv2_OrderParts = env_->getArm2OrderParts(); // p1(sp -> mp)
@@ -76,22 +109,28 @@ void Planner::plan()
                 OrderPart* part = new OrderPart();
                 part->setPartType((*ord_it)->getPartType());
                 part->setCurrentPose((*ord_it)->getCurrentPose());
-                part->setEndPose(common_pose_); // TO-DO ---- set ommon bin pose so that arm1 can pick it from there.
-                (*ord_it)->setCurrentPose(common_pose_);
+                // TO-DO ----> set common bin pose so that arm1 can pick it from there.
                 // add it to the beginning of agv2 as a new shipment
+                if( common_pose_ind <= 3) {
+                    part->setEndPose(common_pose_[common_pose_ind]);
+                    (*ord_it)->setCurrentPose(common_pose_[common_pose_ind]);
+                    if(common_pose_ind==3) common_pose_ind=0;
+                    else ++common_pose_ind;
+                }
+                
                 if(new_shipment_to_agv2.count(part_type)) {
                     new_shipment_to_agv2[part_type].emplace_back(part);
                 }
                 else {
-                    new_shipment_to_agv2[part_type] = std::vector<OrderPart *>vec{part};
+                    new_shipment_to_agv2[part_type] = std::vector<OrderPart*>({part});
                 }
             }
         }
     }
 
     if(new_shipment_to_agv2.size()) {
-        auto it = agv2_OrderParts.begin();
-        agv2_OrderParts.insert(it, new_shipment_to_agv2);
+        env_->getArm2PreOrderParts()->clear();
+        env_->getArm2PreOrderParts()->emplace_back(new_shipment_to_agv2);
     }
 
 
@@ -111,16 +150,19 @@ void Planner::plan()
                 OrderPart *part = new OrderPart();
                 part->setPartType((*ord_it)->getPartType());
                 part->setCurrentPose((*ord_it)->getCurrentPose());
-                part->setEndPose(middle_pose); // TO-DO ---- set ommon bin pose so that arm1 can pick it from there.
-                (*ord_it)->setCurrentPose(middle_pose);
+                // TO-DO ---- set ommon bin pose so that arm1 can pick it from there.
                 // add it to the beginning of agv2 as a new shipment
-                if (new_shipment_to_agv1[part_type].count())
-                {
+                if( common_pose_ind <= 3) {
+                    part->setEndPose(common_pose_[common_pose_ind]);
+                    (*ord_it)->setCurrentPose(common_pose_[common_pose_ind]);
+                    if(common_pose_ind==3) common_pose_ind=0;
+                    else ++common_pose_ind;
+                }
+                if (new_shipment_to_agv1[part_type].count()) {
                     new_shipment_to_agv1[part_type].emplace_back(part);
                 }
-                else
-                {
-                    new_shipment_to_agv1[part_type] = std::vector<OrderPart *>(part);
+                else {
+                    new_shipment_to_agv1[part_type] = std::vector<OrderPart *>({part});
                 }
             }
         }
@@ -128,10 +170,15 @@ void Planner::plan()
 
     if (new_shipment_to_agv1.size())
     {
-        auto it = agv1_OrderParts->begin();
-        agv2_OrderParts->insert(it, new_shipment_to_agv1);
+        env_->getArm1PreOrderParts()->clear();
+        env_->getArm1PreOrderParts()->emplace_back(new_shipment_to_agv1);
     }
 
+        // for (const auto &part : agv1_OrderParts)
+        // {
+        //     auto part_type = part->first;
+        //     auto vec_poses = (*sorted_BinParts)[part_type];
+        //     for (auto pose : vec_poses)
         // for (const auto &part : agv1_OrderParts)
         // {
         //     auto part_type = part->first;
@@ -162,30 +209,100 @@ void Planner::plan()
     //         {
     //             arm2_Vector = part->second;
     //         }
-    //     }
-    // }
-    // target();
-    }
-
-void Planner::target(){
-    for (auto part : arm1_Vector)
-    {
-        if(part.getTrayId() == "agv1")
-        {
-            arm1_.moveToTarget(part.getTrayPose());
+//     //     }
+//     // }
+//     // target();
+//     }
+// 
+// void Planner::target(){
+//     for (auto part : arm1_Vector)
+//     {
+//         if(part.getTrayId() == "agv1")
+//         {
+//             arm1_.moveToTarget(part.getTrayPose());
         } else
+//         {
+//             arm1_.moveToTarget(common_pose_);
+//         }
+//     }
+// 
+//     for (auto part : arm2_Vector)
+//     {
+//         if (part.getTrayId() == "agv2")
+//         {
+//             arm2_.moveToTarget(part.getTrayPose());
+//         }
+//         else
         {
-            arm1_.moveToTarget(common_pose_);
+            arm2_.moveToTarget(common_pose_);
         }
     }
-
-    for (auto part : arm2_Vector)
-    {
-        if (part.getTrayId() == "agv2")
+}
         {
-            arm2_.moveToTarget(part.getTrayPose());
+            arm2_.moveToTarget(common_pose_);
         }
-        else
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
+        {
+            arm2_.moveToTarget(common_pose_);
+        }
+    }
+}
         {
             arm2_.moveToTarget(common_pose_);
         }

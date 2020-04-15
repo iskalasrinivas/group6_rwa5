@@ -52,14 +52,13 @@ OrderManager::OrderManager(Environment *env) : environment(env), order_segregate
     order_ = NULL;
     order_subscriber_ = order_manager_nh_.subscribe("/ariac/orders", 10,
                                                     &OrderManager::OrderCallback, this);
-
     while (!environment->isAllBinCameraCalled())
     {
         ROS_INFO_STREAM("Bin camera is not called" << std::endl);
     }
     ROS_INFO_STREAM("Bin camera Called!! Starting segregating Orders." << std::endl);
     ros::Duration(1).sleep();
-    segregateOrders();
+    updateAllOrderPickupLocation();
 }
 
 OrderManager::~OrderManager() {}
@@ -116,26 +115,6 @@ void OrderManager::updateAllOrder()
                     for (auto displace_it = part_vec.begin(); displace_it != part_vec.end(); ++displace_it)
                     {
                         (*order_it)->setCurrentPose(*displace_it);
-                        if (displaceParts.count(part_type))
-                        {
-                            displaceParts[part_type].emplace_back(*order_it);
-                        }
-                        else
-                        {
-                            std::vector<OrderPart *> order_vec{*order_it};
-                            displaceParts[part_type] = order_vec;
-                        }
-                        part_vec.erase(displace_it);
-                        (*agv1_FirstOrder)[part_type].erase(order_it);
-                    }
-                }
-            }
-        }
-
-        std::map<std::string, std::vector<OrderPart *>> trashParts = getTrashParts(r_tray1_parts);
-        auto it = environment->getArm1OrderParts()->begin();
-        environment->getArm1OrderParts()->insert(it, displaceParts);
-        environment->getArm1OrderParts()->insert(it, trashParts);
     }
 
     // UPDATE FOR AGV2
@@ -268,6 +247,11 @@ void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr &order_msg)
             agv2_OrderParts->push_back(shipment_Parts);
         }
     }
+}
+void updateAllOrderPickupLocation() {
+    updatePickupLocation(env_->getArm1OrderParts());.
+    updatePickupLocation(env_->getArm2OrderParts());
+
 }
 
 void OrderManager::updatePickupLocation(std::vector<std::map<std::string, std::vector<OrderPart *>>> *orderParts)

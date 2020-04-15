@@ -56,6 +56,7 @@ class OrderPart {
 	geometry_msgs::Pose tray_pose_;
 	geometry_msgs::Pose end_pose_;
 	geometry_msgs::Pose current_pose_;
+	geometry_msgs::Pose middle_pose_;
 	std::string tray_id;
 
 	tf2_ros::Buffer tfBuffer;
@@ -70,11 +71,13 @@ class OrderPart {
 
 	void setPartType(std::string);
 	void setCurrentPose(geometry_msgs::Pose);
+	void setMiddlePose(geometry_msgs::Pose);
 	void setEndPose(geometry_msgs::Pose);
-	const std::string getPartType();
-	const geometry_msgs::Pose getEndPose();
-	const geometry_msgs::Pose getTrayPose();
-	const geometry_msgs::Pose getCurrentPose();
+	std::string getPartType() const;
+	geometry_msgs::Pose getEndPose() const;
+	geometry_msgs::Pose getTrayPose() const;
+	geometry_msgs::Pose getCurrentPose() const;
+	geometry_msgs::Pose getMiddlePose() const;
 	void worldTransformation();
 	std::string getTrayId();
 };
