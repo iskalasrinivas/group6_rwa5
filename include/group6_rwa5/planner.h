@@ -44,6 +44,7 @@
 #include <ros/ros.h>
 #include <environment.h>
 #include <order_manager.h>
+#include <std_msgs/Bool.h>
 #include <robot_controller.h>
 #include <geometry_msgs/Pose.h>
 
@@ -55,11 +56,16 @@ public:
     void target();
 
 private:
+    ros::NodeHandle planner_nh_;
+    ros::Subscriber planner_sub_;
+    ros::Publisher execute_executer;
+    ros::AsyncSpinner async_spinner;
     int common_pose_ind;
     Environment *env_;
     OrderManager ordermanager_;
     std::vector<OrderPart> arm2_Vector;
     std::vector<OrderPart> arm1_Vector;
+    void plancallback(const std_msgs::Bool::ConstPtr&);
 //    RobotController arm1_;
 //    RobotController arm2_;
     geometry_msgs::Pose common_pose_[4];

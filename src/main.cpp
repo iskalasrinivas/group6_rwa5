@@ -61,10 +61,8 @@ int main(int argc, char **argv) {
 
 //
 	Competition mycompetition;
-//
-//	while(ros::ok()){
-//		ROS_INFO_STREAM("HELLO");
-//		std::cout << "OK";
+
+
 	ros::waitForShutdown();
 //	}
 

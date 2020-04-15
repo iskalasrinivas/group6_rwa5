@@ -1,8 +1,5 @@
 #include <logical_camera_sensor.h>
 
-
-
-
 LogicalCameraSensor::LogicalCameraSensor(std::string topic, Environment * env, bool bc, bool tc):
 async_spinner(0), environment_(env), bincam_(bc) ,traycam_(tc), transform_(topic){
 	async_spinner.start();
@@ -52,7 +49,6 @@ void LogicalCameraSensor::SortAllBinParts() {
 			}
 		}
 	}
-
 }
 
 void LogicalCameraSensor::logicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg) {

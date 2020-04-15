@@ -46,19 +46,26 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-Executer::Executer(Environment* env): env_(env), arm_1_has_been_zeroed_(false), arm_2_has_been_zeroed_(false), arm1_("arm1"), arm2_("arm2"){
+Executer::Executer(Environment* env): async_spinner(0), env_(env), arm_1_has_been_zeroed_(false), arm_2_has_been_zeroed_(false), arm1_("arm1"), arm2_("arm2"){
+
+	// ros::AsyncSpinner async_spinner(0);
+	async_spinner.start();
+
+	execute_sub_ = execute_nh_.subscribe<std_msgs::Bool>("/ariac/execute_executer", 10 ,&Executer::executeCallBack, this);
+
 	arm_1_joint_trajectory_publisher_ = execute_nh_.advertise<trajectory_msgs::JointTrajectory>( "/ariac/arm1/arm/command", 10);
 
 	arm_2_joint_trajectory_publisher_ = execute_nh_.advertise<trajectory_msgs::JointTrajectory>("/ariac/arm2/arm/command", 10);
-
-
 }
 
-Executer::~Executer(){
+Executer::~Executer()
+{}
 
+void Executer::executeCallBack(const std_msgs::Bool::ConstPtr& msg) {
+	if(msg->data) {
+		Execute();
+	}
 }
-
-
 // Called when a new JointState message is received.
 
 void Executer::arm_1_joint_state_callback(
@@ -184,14 +191,17 @@ void Executer::updatePickPose(OrderPart* order_) {
 
 void Executer::Execute() {
 
+	ROS_INFO_STREAM("<<<<<<<In Execute modules");
 	// Execute Pre-order tasks of arm1
 	std::vector<std::map<std::string, std::vector<OrderPart*>>>* arm1preOrderParts = env_->getArm1PreOrderParts(); // std::vector<std::map<std::string, std::vector<OrderPart*>>>*
 	for(auto po1_vec_it = arm1preOrderParts->begin(); po1_vec_it != arm1preOrderParts->end(); ++po1_vec_it) {
 		
 		for (auto po1_map_it = po1_vec_it->begin();po1_map_it != po1_vec_it->end(); ++po1_map_it) {
-
+			
 			for(auto po1_it = po1_map_it->second.begin();po1_it != po1_map_it->second.end(); ++po1_it) { // pol_it is basically iterator to std::vector<OrderPart*>
+				
 				arm1_.pickPart((*po1_it)->getCurrentPose());
+				ROS_INFO_STREAM("<<<<<<<arm1 going to quality bin");
 				arm1_.GoToQualityCameraFromBin();
 				env_->setSeeQualityCamera1(true);
 				while(not env_->isQuality1Called() ) {
@@ -210,6 +220,7 @@ void Executer::Execute() {
 			}
 		}
 	}
+	arm1_.SendRobotHome();
 
 
 	// Execute Pre-order tasks of arm2
@@ -220,6 +231,7 @@ void Executer::Execute() {
 
 			for(auto po2_it = po2_map_it->second.begin();po2_it != po2_map_it->second.end(); ++po2_it) {
 				arm2_.pickPart((*po2_it)->getCurrentPose());
+				ROS_INFO_STREAM("<<<<<<<arm2 going to quality bin");
 				arm2_.GoToQualityCameraFromBin();
 				env_->setSeeQualityCamera2(true);
 				while(not env_->isQuality2Called() ) {
@@ -238,6 +250,7 @@ void Executer::Execute() {
 			}
 		}
 	}
+	arm2_.SendRobotHome();
 
 	auto arm1OrderParts = env_->getArm1OrderParts(); // std::vector<std::map<std::string, std::vector<OrderPart* > > >*
 	for(auto o1_vec_it = arm1OrderParts->begin(); o1_vec_it != arm1OrderParts->end(); ++o1_vec_it) {

@@ -56,7 +56,7 @@
 #include "competition.h"
 
 Competition::Competition() 
-: async_spinner(4),
+: async_spinner(0),
   current_score_(0),
   sensor_(&env_),
   planner_(&env_),
@@ -71,8 +71,8 @@ Competition::Competition()
 	competition_state_subscriber = comp_nh_.subscribe("/ariac/competition_state", 10, &Competition::competition_state_callback, this);
 
 	StartCompetition();
-
 }
+
 Competition::~Competition(){
 
 }

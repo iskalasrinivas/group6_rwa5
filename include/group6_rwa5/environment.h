@@ -39,7 +39,7 @@ class Environment{
     bool all_qualityCamera_called;
     bool binCameraRequired;
     bool trayCameraRequired;
-    bool pickup_location_added;
+    bool order_manager_status;
 
     public:
     Environment();
@@ -49,7 +49,7 @@ class Environment{
     void sortAllBinParts();
     void setAllOrderParts();
     void setReceivedOrders();
-    void setPickLocationAdded();
+    void setorderManagerStatus(bool);
 
     std::map<std::string, std::map<std::string, std::vector<geometry_msgs::Pose> > >* getAllBinParts();
     std::map<std::string, std::vector<geometry_msgs::Pose> >* getSortedBinParts();
@@ -62,6 +62,8 @@ class Environment{
     std::map<std::string, std::map<std::string, std::vector<geometry_msgs::Pose> > >* getAllTrayParts();
 
     geometry_msgs::Pose getTrashBinPose();
+    
+    bool getOrderManagerStatus() const;
 
     std::map<std::string, bool>* getBinCamBoolMap();
     std::map<std::string, bool>* getTrayCamBoolMap();
@@ -71,7 +73,8 @@ class Environment{
     bool isQualityCamera1Partfaulty();
     bool isQualityCamera2Partfaulty();    
 
-    void setAllBinCameraCalled(const bool&);
+    // void sorted_all_binParts(const bool&);
+    void setAllBinCameraCalled(const bool& );
     void setAllTrayCameraCalled(const bool&);
 
     void setTrayCameraRequired(const bool& );

@@ -74,6 +74,7 @@ class RobotController {
 private:
 	std::string arm_id_;
 	ros::NodeHandle robot_controller_nh_;
+	ros::AsyncSpinner async_spinner;
 	moveit::planning_interface::MoveGroupInterface::Options robot_controller_options;
 	ros::ServiceClient gripper_client_;
 	ros::NodeHandle gripper_nh_;
@@ -95,8 +96,8 @@ private:
 	std::vector<double> quality_cam_joint_position_;
 	std::vector<double> trash_bin_joint_position_;
 
-	moveit_msgs::CollisionObject collision_object;
-	std::vector<moveit_msgs::CollisionObject> collision_objects;
+	// moveit_msgs::CollisionObject collision_object;
+	// std::vector<moveit_msgs::CollisionObject> collision_objects;
 
 
 	moveit::planning_interface::MoveGroupInterface robot_move_group_;

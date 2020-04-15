@@ -65,10 +65,12 @@ class OrderManager
 {
 private:
     ros::NodeHandle order_manager_nh_;
+    ros::AsyncSpinner async_spinner;
     ros::Subscriber order_subscriber_;
     osrf_gear::Order* order_;
     std::vector<OrderPart*> current_order_;
     Environment *environment;
+    ros::Publisher execute_planner;
 
 public:
     explicit OrderManager(Environment *);

@@ -103,11 +103,13 @@ void OrderPart::worldTransformation() {
 	try {
 
 		if (tray_id == "agv_1" or tray_id == "any"){
+			tray_id = "agv_1";
 			tS_w_b = tfBuffer.lookupTransform("world", "kit_tray_1",ros::Time(0));
 		}
 
-		else if (tray_id == "agv_2"){
-			 tS_w_b = tfBuffer.lookupTransform("world", "kit_tray_2",ros::Time(0));
+		else if (tray_id == "agv_2" ) {
+			tray_id = "agv_2";
+			tS_w_b = tfBuffer.lookupTransform("world", "kit_tray_2",ros::Time(0));
 		}
 	
 	}
@@ -116,7 +118,7 @@ void OrderPart::worldTransformation() {
 		ROS_WARN("%s", ex.what());
 	}
 	
-	ros::Duration(1.0).sleep();
+	ros::Duration(0.2).sleep();
 
 	try{
 				tf2::doTransform(tray_pose_, end_pose_, tS_w_b);
@@ -126,7 +128,7 @@ void OrderPart::worldTransformation() {
 			    	ROS_WARN("%s",ex.what());
 			        ros::Duration(0.01).sleep();
 			}
-	ros::Duration(1.0).sleep();
+	ros::Duration(0.01).sleep();
 	// ROS_INFO_STREAM("Order  tray frame : " << tray_pose_.position.x << "  " << tray_pose_.position.y << "  " <<tray_pose_.position.z);
 	ROS_INFO_STREAM("Order End Pose: " << end_pose_.position.x << "  " << end_pose_.position.y << "  " <<end_pose_.position.z);
 

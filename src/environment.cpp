@@ -5,7 +5,7 @@ Environment::Environment() :
 all_binCamera_called(false),
 all_trayCamera_called(false),
 trayCameraRequired(false),
-pickup_location_added(false),
+order_manager_status(false),
 binCameraRequired(false){
 
 // common trash pose
@@ -60,9 +60,14 @@ geometry_msgs::Pose Environment::getTrashBinPose(){
      return trash_bin_pose_;
 }
 
-void Environment::setPickLocationAdded(){
-	pickup_location_added = true;
+void Environment::setorderManagerStatus(bool status) {
+	order_manager_status = status;
 }
+
+bool Environment::getOrderManagerStatus() const {
+	return order_manager_status;
+}
+
 
 bool Environment::isAllBinCameraCalled(){
 	return all_binCamera_called;

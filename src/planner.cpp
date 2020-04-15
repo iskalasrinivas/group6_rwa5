@@ -41,7 +41,11 @@
 
 #include <planner.h>
 
-Planner::Planner(Environment *env) : env_(env), ordermanager_(env_){
+Planner::Planner(Environment *env) :  async_spinner(0),env_(env), ordermanager_(env_){
+
+	
+	async_spinner.start();
+
 	// Initialize the common pose index
 	common_pose_ind = 0;
 
@@ -77,18 +81,32 @@ Planner::Planner(Environment *env) : env_(env), ordermanager_(env_){
 	common_pose_[3].orientation.y = 0;
 	common_pose_[3].orientation.z = 0;
 	common_pose_[3].orientation.w = 0;
+	
+	planner_sub_ = planner_nh_.subscribe<std_msgs::Bool>("/ariac/execute_planner", 10 ,&Planner::plancallback, this);
+	
+	execute_executer = planner_nh_.advertise<std_msgs::Bool>("/ariac/execute_executer", 1000);
+	
+	// while( not env_.getOrderManagerStatus() ) {
+	// 	ROS_INFO_STREAM("Waiting for order manager to process...");
+	// 	ros::Duration(5.0).sleep();
+	// }
+	// ROS_INFO_STREAM("Planning now...");
+	// planner_.plan();
 
-
-	// std::vector<geometry::Pose>
-	// for ()
-	// common_pose[0]
 }
 
 Planner::~Planner()
 {}
 
+void Planner::plancallback(const std_msgs::Bool::ConstPtr& msg) {
+	if(msg->data) {
+		plan();
+	}
+}
 
 void Planner::plan() {
+
+	ROS_INFO_STREAM("In planning modules's plan()");
 	// auto sorted_BinParts = environment->getSortedBinParts();  std::vector<std::map<std::string, std::vector<OrderPart*>>>
 	std::vector<std::map<std::string, std::vector<OrderPart*>>>* agv1_OrderParts = env_->getArm1OrderParts(); //  remove from tray, displace, bin to tray p1(mp X -> ep)
 	auto agv2_OrderParts = env_->getArm2OrderParts(); // p1(sp -> mp)
@@ -98,8 +116,9 @@ void Planner::plan() {
 	std::map<std::string, std::vector<OrderPart *>> new_shipment_to_agv2;
 
 	for (auto map_it = agv1_OrderParts->begin(); map_it != agv1_OrderParts->end(); ++map_it) {
+		ROS_INFO_STREAM("plan agv1: first loop");
 		for (auto ship_it = map_it->begin(); ship_it != map_it->end(); ++ship_it) {
-
+			ROS_INFO_STREAM("plan agv1: second loop");
 			auto part_type = (*ship_it).first;
 
 			for (auto ord_it = (*ship_it).second.begin(); ord_it != (*ship_it).second.end(); ++ord_it) {
@@ -107,6 +126,7 @@ void Planner::plan() {
 				if ((*ord_it)->getCurrentPose().position.y < -1.5)
 				{ // order part is not reachable To-DO ----- make sure value is right
 					// add a copy of this part to agv2 order parts
+					ROS_INFO_STREAM("Part is not reachable by arm-1, pose : " << (*ord_it)->getCurrentPose());
 					OrderPart* part = new OrderPart();
 					part->setPartType((*ord_it)->getPartType());
 					part->setCurrentPose((*ord_it)->getCurrentPose());
@@ -115,6 +135,7 @@ void Planner::plan() {
 					if( common_pose_ind <= 3) {
 						part->setEndPose(common_pose_[common_pose_ind]);
 						(*ord_it)->setCurrentPose(common_pose_[common_pose_ind]);
+						ROS_INFO_STREAM("PO1 :" << (*ord_it)->getPartType() << " " << (*ord_it)-> getEndPose());
 						if(common_pose_ind==3) common_pose_ind=0;
 						else ++common_pose_ind;
 					}
@@ -129,17 +150,18 @@ void Planner::plan() {
 			}
 		}
 	}
-
+	ROS_INFO_STREAM("plan: out of first loop");
 	if(new_shipment_to_agv2.size()) {
 		env_->getArm2PreOrderParts()->clear();
 		env_->getArm2PreOrderParts()->emplace_back(new_shipment_to_agv2);
 	}
-
+	ROS_INFO_STREAM("plan: line 155");
 
 	/// Checking if anything needs to be added to arm1 to support arm2
 	std::map<std::string, std::vector<OrderPart *>> new_shipment_to_agv1;
 
 	for (auto map_it = agv2_OrderParts->begin(); map_it != agv2_OrderParts->end(); ++map_it) {
+		ROS_INFO_STREAM("plan agv2: secondloop");
 		for (auto ship_it = map_it->begin(); ship_it != map_it->end(); ++ship_it) {
 
 			auto part_type = ship_it->first;
@@ -147,7 +169,7 @@ void Planner::plan() {
 			for (auto ord_it = ship_it->second.begin(); ord_it != ship_it->second.end(); ++ord_it)
 			{
 
-				if ((*ord_it)->getCurrentPose().position.y < 0.5) { // order part is not reachable  To-DO ----- make sure value is right
+				if ((*ord_it)->getCurrentPose().position.y > 1.5) { // order part is not reachable  To-DO ----- make sure value is right
 					// add a copy of this part to agv2 order parts
 					OrderPart *part = new OrderPart();
 					part->setPartType((*ord_it)->getPartType());
@@ -157,6 +179,7 @@ void Planner::plan() {
 					if( common_pose_ind <= 3) {
 						part->setEndPose(common_pose_[common_pose_ind]);
 						(*ord_it)->setCurrentPose(common_pose_[common_pose_ind]);
+						ROS_INFO_STREAM("PO2 :" << (*ord_it)->getPartType() << " " << (*ord_it)-> getEndPose());
 						if(common_pose_ind==3) common_pose_ind=0;
 						else ++common_pose_ind;
 					}
@@ -177,7 +200,11 @@ void Planner::plan() {
 		env_->getArm1PreOrderParts()->emplace_back(new_shipment_to_agv1);
 	}
 
-
+	std_msgs::Bool msg;
+	msg.data = true;
+	for(size_t i=0; i<1; ++i){
+		execute_executer.publish(msg);
+	}
 }
 
 
@@ -192,17 +219,3 @@ void Planner::plan() {
 // find Unreachable Parts for agv2 from the agv2 order
 
 // push these parts to the vector of the order parts of arm1
-
-// execute to deliver these parts to the common location
-// logic for execute :
-// iterate thorugh arm1_Vector
-// if (part.agv id == agv 1)
-//  goToTarget(end_Pose)
-// if( part.agv id == agv 2)
-// goToTarget(common_pose)
-
-//    iterate through arm2_Vector
-//    if(part.agv id == agv 2)
-//     goToTarget(end_Pose)
-//    if(part.agv id == agv 1)
-//     goToTarget(common_Pose)

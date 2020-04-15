@@ -1,6 +1,7 @@
 #include <quality_camera_sensor.h>
 
-QualityCameraSensor::QualityCameraSensor(std::string topic, Environment * env): environment_(env) {
+QualityCameraSensor::QualityCameraSensor(std::string topic, Environment * env):async_spinner(0), environment_(env) {
+	async_spinner.start();
 	getCameraName(topic);
 	auto qualitycamboolmap_ = environment_->getQualityCamBoolMap();
 	(*qualitycamboolmap_)[cam_name]= false;

@@ -51,6 +51,7 @@ class QualityCameraSensor {
 private:
 
 ros::NodeHandle quality_nh_;
+ros::AsyncSpinner async_spinner;
 ros::Subscriber quality_subscriber_;
 Environment * environment_;
 std::string cam_name;

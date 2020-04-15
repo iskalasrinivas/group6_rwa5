@@ -44,13 +44,17 @@
 #include <boost/optional.hpp>
 #include <order_manager.h>
 #include <environment.h>
+#include <std_msgs/Bool.h>
 
-OrderManager::OrderManager(Environment *env) : environment(env) {
-	ros::AsyncSpinner async_spinner(4);
+OrderManager::OrderManager(Environment *env) :  async_spinner(4), environment(env) {
 	async_spinner.start();
 	order_ = NULL;
 	order_subscriber_ = order_manager_nh_.subscribe("/ariac/orders", 10,
 			&OrderManager::OrderCallback, this);
+	ROS_INFO_STREAM("order manager is called. "<< boost::this_thread::get_id());	
+
+	execute_planner = order_manager_nh_.advertise<std_msgs::Bool>("/ariac/execute_planner", 1000);
+
 	// while (!environment->isAllBinCameraCalled())
 	// {
 	// 	ROS_INFO_STREAM("All Bin cameras are not called" << std::endl);
@@ -248,7 +252,7 @@ void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr &order_msg) {
 				shipment_Parts[part_type] = vec;
 			}
 		}
-		if (agv_id == "agv_1" || agv_id == "any") {
+		if (agv_id == "agv_1") {
 			agv1_OrderParts->push_back(shipment_Parts);
 		} else {
 			agv2_OrderParts->push_back(shipment_Parts);
@@ -267,8 +271,9 @@ void OrderManager::updatePickupLocation() {
 		ROS_INFO_STREAM("All Bin cameras are not called" << std::endl);
 		ros::Duration(0.1).sleep();
 	}
+	ROS_INFO_STREAM("updatePickupLocation : All Bin cameras are called");
 	auto sorted_all_binParts = *(environment->getSortedBinParts());
-
+	ROS_INFO_STREAM("updatePickupLocation : called sorted_all_binparts" << sorted_all_binParts.size() );
 
 	// process arm1 order parts and assign poses and mark them as assigned by deleting them!
 	for (auto orderPartsVec : (*environment->getArm1OrderParts())) {
@@ -282,19 +287,21 @@ void OrderManager::updatePickupLocation() {
 				//			    ROS_INFO_STREAM( "order PArt type"<< bin_vec.front());
 				if (bin_vec.size() >= orderPart.second.size()) {
 					auto opart_it = oVecPart.begin();
-					auto bin_part = bin_vec.begin();
+					auto bin_part_pose = bin_vec.begin();
 
-					for (opart_it = oVecPart.begin(), bin_part = bin_vec.begin(); opart_it != oVecPart.end(); ++opart_it, ++bin_part) {
-						(*opart_it)->setCurrentPose(*bin_part);
-						bin_vec.erase(bin_part);
+					for (opart_it = oVecPart.begin(), bin_part_pose = bin_vec.begin(); opart_it != oVecPart.end(); ++opart_it, ++bin_part_pose) {
+						(*opart_it)->setCurrentPose(*bin_part_pose);
+						ROS_INFO_STREAM("Order Initial Pose : "<< bin_part_pose->position.x << " " << bin_part_pose->position.y << " " << bin_part_pose->position.z);
+						bin_vec.erase(bin_part_pose);
 					}
 				}
 			}
 		}
 	}
-
+	
 	// process arm2 order parts and assign poses and mark them as assigned by deleting them!
 	for (const auto &orderPartsVec : (*environment->getArm2OrderParts())) {
+		ROS_INFO_STREAM("Updating Part pick location for arm2");
 		for (const auto &orderPart : orderPartsVec) {
 			auto part_type = orderPart.first;
 			//		    ROS_INFO_STREAM( "order Part type :"<< part_type);
@@ -317,5 +324,11 @@ void OrderManager::updatePickupLocation() {
 	}
 
 	environment->setAllBinCameraCalled(false);
-	environment->setPickLocationAdded();
+	environment->setorderManagerStatus(true);
+	std_msgs::Bool msg;
+	msg.data = true;
+	for(size_t i=0; i<1; ++i){
+		execute_planner.publish(msg);
+	}
+	ROS_INFO_STREAM("!!! Order Mangaer has completed it's processing !!!");
 }

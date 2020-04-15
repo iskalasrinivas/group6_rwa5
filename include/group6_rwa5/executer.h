@@ -47,6 +47,7 @@
 #include <environment.h>
 #include <osrf_gear/Order.h>
 #include <ros/ros.h>
+#include <std_msgs/Bool.h>
 #include <robot_controller.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/LaserScan.h>
@@ -61,6 +62,8 @@ class Executer
 {
 private:
     ros::NodeHandle execute_nh_;
+	ros::Subscriber execute_sub_;
+	ros::AsyncSpinner async_spinner;
     ros::Publisher arm_1_joint_trajectory_publisher_;
 	ros::Publisher arm_2_joint_trajectory_publisher_;
 
@@ -83,6 +86,8 @@ public:
 
 	/// Create a JointTrajectory with all positions set to zero, and command the arm.
 	void send_arm_to_zero_state(ros::Publisher &);
+
+	void executeCallBack(const std_msgs::Bool::ConstPtr& );
 
 	void deliverThePartinBin(OrderPart * oPart);
 
