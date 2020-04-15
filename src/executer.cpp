@@ -199,7 +199,7 @@ void Executer::Execute() {
 		for (auto po1_map_it = po1_vec_it->begin();po1_map_it != po1_vec_it->end(); ++po1_map_it) {
 			
 			for(auto po1_it = po1_map_it->second.begin();po1_it != po1_map_it->second.end(); ++po1_it) { // pol_it is basically iterator to std::vector<OrderPart*>
-				
+				ROS_INFO_STREAM("1");
 				arm1_.pickPart((*po1_it)->getCurrentPose());
 				ROS_INFO_STREAM("<<<<<<<arm1 going to quality bin");
 				arm1_.GoToQualityCameraFromBin();
@@ -230,6 +230,7 @@ void Executer::Execute() {
 		for (auto po2_map_it = po2_vec_it->begin(); po2_map_it != po2_vec_it->end(); ++po2_map_it) {
 
 			for(auto po2_it = po2_map_it->second.begin();po2_it != po2_map_it->second.end(); ++po2_it) {
+				ROS_INFO_STREAM("2");
 				arm2_.pickPart((*po2_it)->getCurrentPose());
 				ROS_INFO_STREAM("<<<<<<<arm2 going to quality bin");
 				arm2_.GoToQualityCameraFromBin();
@@ -258,7 +259,7 @@ void Executer::Execute() {
 		for (auto o1_map_it = o1_vec_it->begin();o1_map_it != o1_vec_it->end(); ++o1_map_it) {
 
 			for(auto o1_it = o1_map_it->second.begin();o1_it != o1_map_it->second.end(); ++o1_it) {
-				
+				ROS_INFO_STREAM("3");
 				arm1_.pickPart((*o1_it)->getCurrentPose());
 				arm1_.GoToQualityCameraFromBin();
 				env_->setSeeQualityCamera1(true);
@@ -290,7 +291,7 @@ void Executer::Execute() {
 		for (auto o2_map_it = o2_vec_it->begin();o2_map_it != o2_vec_it->end(); ++o2_map_it) {
 
 			for(auto o2_it = o2_map_it->second.begin();o2_it != o2_map_it->second.end(); ++o2_it) {
-				
+				ROS_INFO_STREAM("4");
 				arm2_.pickPart((*o2_it)->getCurrentPose());
 				arm2_.GoToQualityCameraFromBin();
 				env_->setSeeQualityCamera2(true);

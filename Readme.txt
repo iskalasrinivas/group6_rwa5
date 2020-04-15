@@ -23,5 +23,6 @@
  
  roslaunch group6_rwa5 group6_rwa5.launch
  roslaunch ur10_moveit_config move_group.launch arm_namespace:=/ariac/arm1
+ roslaunch ur10_moveit_config move_group.launch arm_namespace:=/ariac/arm2
  rosrun group6_rwa5 main_node
 

@@ -73,6 +73,7 @@
 class RobotController {
 private:
 	std::string arm_id_;
+	double interval;
 	ros::NodeHandle robot_controller_nh_;
 	ros::AsyncSpinner async_spinner;
 	moveit::planning_interface::MoveGroupInterface::Options robot_controller_options;

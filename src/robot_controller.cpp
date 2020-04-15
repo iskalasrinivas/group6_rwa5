@@ -52,6 +52,7 @@
  */
 RobotController::RobotController(std::string arm_id) :
 	async_spinner(0),
+	interval(0.2),
 	arm_id_(arm_id), 
 	robot_controller_nh_("/ariac/" + arm_id_), 
 	robot_controller_options("manipulator", "/ariac/" + arm_id_ + "/robot_description", robot_controller_nh_),
@@ -76,19 +77,19 @@ RobotController::RobotController(std::string arm_id) :
 		"/ariac/"+arm_id_+"/gripper/state", 10, &RobotController::GripperCallback, this);
 	
 
+    home_joint_pose_ =  {1.0, 3.14,  -2.0,  2.14, 4.6, -1.51, 0.0};
+
+	SendRobotHome();
+
 	robot_tf_listener_.waitForTransform(arm_id_+"_linear_arm_actuator", arm_id_+"_ee_link",
 										ros::Time(0), ros::Duration(10));
 	robot_tf_listener_.lookupTransform("/"+arm_id_+"_linear_arm_actuator", "/"+arm_id_+"_ee_link",
 									   ros::Time(0), robot_tf_transform_);
 
-
-    tf2::Quaternion myQuaternion;
-    myQuaternion.setRPY( 0.0, 0.0, 1.5707);
-
-	fixed_orientation_.x = myQuaternion.x();
-	fixed_orientation_.y = myQuaternion.y();
-	fixed_orientation_.z = myQuaternion.z();
-	fixed_orientation_.w = myQuaternion.w();
+	fixed_orientation_.x = robot_tf_transform_.getRotation().x();
+	fixed_orientation_.y = robot_tf_transform_.getRotation().y();
+	fixed_orientation_.z =  robot_tf_transform_.getRotation().z();
+	fixed_orientation_.w = robot_tf_transform_.getRotation().w();
 
 	// tf::quaternionMsgToTF(fixed_orientation_, q);
 	// tf::Matrix3x3(q).getRPY(roll_def_, pitch_def_, yaw_def_);
@@ -129,8 +130,20 @@ RobotController::RobotController(std::string arm_id) :
 
 	    ROS_INFO_STREAM("Going to home Pose: "  << arm_id_);	
 	    // home_joint_pose_ =  {0.8, 3.14,  -2.7,-1.0, 2.1, -1.59, 0.126};
+
+		// robot_tf_listener_.waitForTransform("world", arm_id_+"_ee_link", ros::Time(0),
+		// 								ros::Duration(10));
+		// robot_tf_listener_.lookupTransform("/world", "/"+arm_id_+"_ee_link", ros::Time(0),
+		// 							   robot_tf_transform_);
+
+		// ROS_WARN_STREAM(robot_tf_transform_.getRotation().x() << " "<<	robot_tf_transform_.getRotation().y()<<" "<<robot_tf_transform_.getRotation().z()<<" "<<robot_tf_transform_.getRotation().w());
+		
 		home_joint_pose_ =  {1.0, 3.14,  -2.0,  2.14, 3.1, -1.59, 0.126};
-	    SendRobotHome();
+		
+		// home_joint_pose_ = {0.0, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
+    	// home_joint_pose_1 = {1.18, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
+
+	    SendRobotHome();	
 		static_bin_pose.position.x = -0.13;
 		static_bin_pose.position.y = 0.75;
 		static_bin_pose.position.z = 1.69;
@@ -156,6 +169,16 @@ RobotController::RobotController(std::string arm_id) :
 	else if(arm_id_ == "arm2"){
 
 		ROS_INFO_STREAM("Going to home Pose: "  << arm_id_);
+		ROS_INFO_STREAM("Going to home Pose: "  << arm_id_);	
+	    //home_joint_pose_ =  {0.8, 3.14,  -2.7,-1.0, 2.1, -1.59, 0.126};
+
+		// robot_tf_listener_.waitForTransform("world", arm_id_+"_ee_link", ros::Time(0),
+		// 								ros::Duration(interval));
+		// robot_tf_listener_.lookupTransform("/world", "/"+arm_id_+"_ee_link", ros::Time(0),
+		// 							   robot_tf_transform_);
+
+		// ROS_WARN_STREAM(robot_tf_transform_.getRotation().x() << " "<<	robot_tf_transform_.getRotation().y()<<" ") ;
+
 	    home_joint_pose_ =  {-0.9, 3.14,  -2.0,  2.14, 3.1, -1.59, 0.126};
 	    SendRobotHome();
 
@@ -165,7 +188,7 @@ RobotController::RobotController(std::string arm_id) :
 		static_bin_pose.orientation = fixed_orientation_;
 
 		quality_static_pose.position.x = 0.19;
-		quality_static_pose.position.y = 3.25;
+		quality_static_pose.position.y = -3.25;
 		quality_static_pose.position.z = 1.15;
 		quality_static_pose.orientation = fixed_orientation_;
 
@@ -253,14 +276,14 @@ void RobotController::Execute() {
 	if (this->Planner())
 	{
 		robot_move_group_.move();
-		ros::Duration(0.02).sleep();
+		ros::Duration(interval).sleep();
 	}
 }
 
 void RobotController::GoToBinStaticPosition()
 {
 	GoToTarget(static_bin_pose);
-	ros::Duration(1.0).sleep();
+	ros::Duration(interval).sleep();
 	ROS_INFO_STREAM("At Bin safe Home position");
 }
 
@@ -311,10 +334,10 @@ void RobotController::moveToTarget(geometry_msgs::Pose final_pose) {
 		next_pose.orientation.w = current_pose_.orientation.w +
 								  i * dt_pose.orientation.w;
 		GoToTarget(next_pose);
-		ros::Duration(1.0).sleep();
+		ros::Duration(interval).sleep();
 	}
 	GoToTarget(final_pose);
-	ros::Duration(1.0).sleep();
+	ros::Duration(interval).sleep();
 	//	GoToTarget(waypoints);
 }
 
@@ -372,10 +395,10 @@ void RobotController::moveToTargetinPieces(geometry_msgs::Pose final_pose) {
 		//					i * dt_pose.orientation.w;
 		//			waypoints.emplace_back(next_pose);
 		GoToTarget(next_pose);
-		ros::Duration(1.0).sleep();
+		ros::Duration(interval).sleep();
 	}
 	GoToTarget(final_pose);
-	ros::Duration(1.0).sleep();
+	ros::Duration(interval).sleep();
 }
 void RobotController::GoToTarget(
 	std::vector<geometry_msgs::Pose> waypoints)
@@ -396,13 +419,13 @@ void RobotController::GoToTarget(
 		robot_move_group_.computeCartesianPath(waypoints, 0.01, 0.0, traj, true);
 
 	ROS_WARN_STREAM("Fraction: " << fraction * 100);
-	ros::Duration(0.05).sleep();
+	ros::Duration(interval).sleep();
 
 	robot_planner_.trajectory_ = traj;
 
 	//if (fraction >= 0.3) {
 	robot_move_group_.execute(robot_planner_);
-	ros::Duration(0.05).sleep();
+	ros::Duration(interval).sleep();
 	//    } else {
 	//        ROS_ERROR_STREAM("Safe Trajectory not found!");
 	//    }
@@ -429,13 +452,13 @@ void RobotController::GoToTarget(
 		robot_move_group_.computeCartesianPath(waypoints, 0.01, 0.0, traj, true);
 
 	ROS_WARN_STREAM("Fraction: " << fraction * 100);
-	ros::Duration(0.05).sleep();
+	ros::Duration(interval).sleep();
 
 	robot_planner_.trajectory_ = traj;
 
 	//if (fraction >= 0.3) {
 	robot_move_group_.execute(robot_planner_);
-	ros::Duration(0.05).sleep();
+	ros::Duration(interval).sleep();
 	//    } else {
 	//        ROS_ERROR_STREAM("Safe Trajectory not found!");
 	//    }
@@ -448,13 +471,13 @@ void RobotController::GoToTarget(const geometry_msgs::Pose &pose)
 	ros::AsyncSpinner spinner(4);
 	robot_move_group_.setPoseTarget(target_pose_);
 	spinner.start();
-	ros::Duration(2.0).sleep();
+	ros::Duration(interval).sleep();
 	if (this->Planner())
 	{	
-		ros::Duration(2.0).sleep();
+		ros::Duration(interval).sleep();
 		ROS_INFO_STREAM("Point success");
 		robot_move_group_.move();
-		ros::Duration(2.0).sleep();
+		ros::Duration(interval).sleep();
 	}
 	ROS_INFO_STREAM("Point reached...");
 }
@@ -470,7 +493,7 @@ void RobotController::GoToAGV(const geometry_msgs::Pose &pose)
 	{
 		ROS_INFO_STREAM("Point success");
 		robot_move_group_.move();
-		ros::Duration(0.02).sleep();
+		ros::Duration(interval).sleep();
 	}
 	ROS_INFO_STREAM("Point reached...");
 }
@@ -479,7 +502,7 @@ void RobotController::GripperToggle(const bool &state)
 {
 	gripper_service_.request.enable = state;
 	gripper_client_.call(gripper_service_);
-	ros::Duration(0.01).sleep();
+	ros::Duration(interval).sleep();
 	// if (gripper_client_.call(gripper_service_)) {
 	if (gripper_service_.response.success)
 	{
@@ -497,8 +520,7 @@ void RobotController::GripperCallback(
 	gripper_state_ = grip->attached;
 }
 
-bool RobotController::isPartAttached()
-{
+bool RobotController::isPartAttached() {
 	return gripper_state_;
 }
 
@@ -521,10 +543,10 @@ void RobotController::GoToPose(const std::vector<double> &pose)
 	if (this->Planner())
 	{
 		robot_move_group_.move();
-		ros::Duration(0.02).sleep();
+		ros::Duration(interval).sleep();
 	}
 
-	ros::Duration(0.05).sleep();
+	ros::Duration(interval).sleep();
 }
 
 geometry_msgs::Pose RobotController::getHomeCartPose()
@@ -542,15 +564,15 @@ void RobotController::SendRobotHome()
 	if (this->Planner())
 	{
 		robot_move_group_.move();
-		ros::Duration(0.05).sleep();
+		ros::Duration(interval).sleep();
 	}
 
-	ros::Duration(0.05).sleep();
+	ros::Duration(interval).sleep();
 }
 
 void RobotController::dropInTrash()
 {
-	// ros::Duration(2.0).sleep();
+	// ros::Duration(interval).sleep();
 	robot_move_group_.setJointValueTarget(trash_bin_joint_position_);
 	// this->execute();
 	ros::AsyncSpinner spinner(4);
@@ -558,15 +580,15 @@ void RobotController::dropInTrash()
 	if (this->Planner())
 	{
 		robot_move_group_.move();
-		ros::Duration(0.05).sleep();
+		ros::Duration(interval).sleep();
 	}
 	GripperToggle(false);
-	ros::Duration(0.05).sleep();
+	ros::Duration(interval).sleep();
 }
 
 void RobotController::GoToQualityCamera()
 {
-	// ros::Duration(2.0).sleep();
+	// ros::Duration(interval).sleep();
 	robot_move_group_.setJointValueTarget(quality_cam_joint_position_);
 	// this->execute();
 	//		ros::AsyncSpinner spinner(4);
@@ -574,85 +596,67 @@ void RobotController::GoToQualityCamera()
 	if (this->Planner())
 	{
 		robot_move_group_.move();
-		ros::Duration(0.05).sleep();
+		ros::Duration(interval).sleep();
 	}
 	is_at_qualitySensor = true;
-	ros::Duration(0.05).sleep();
+	ros::Duration(interval).sleep();
 }
 
 void RobotController::GoToQualityCameraFromBin()
 {
-	// ros::Duration(2.0).sleep();
-	moveToTargetinPieces(quality_static_pose);
+	// ros::Duration(interval).sleep();
+	GoToTarget(quality_static_pose);
 	// is_at_qualitySensor = true;
 	// this->execute();
 	//		ros::AsyncSpinner spinner(4);
 	//		spinner.start();
-	ros::Duration(1.0).sleep();
+	ros::Duration(interval).sleep();
 	ROS_INFO_STREAM("At quality camera check position");
 }
 
 void RobotController::pickPart(const geometry_msgs::Pose &part_pose)
 {
 	ROS_INFO_STREAM("Picking Part");
-	ros::Duration(0.5).sleep();
+	ros::Duration(interval).sleep();
 	
 	GoToBinStaticPosition();
 	ROS_INFO_STREAM("GoToBinStaticPosition");
 	auto target_top_pose_1 = part_pose;
 	target_top_pose_1.position.z += 0.2;
 	GoToTarget(target_top_pose_1);
-	ros::Duration(1.0).sleep();
+	ros::Duration(interval).sleep();
 	auto target_pose = part_pose;
-	target_pose.position.z += 0.1;
+	target_pose.position.z += 0.07;
 	GoToTarget(target_pose);
 	GripperToggle(true);
 	if (!isPartAttached()) {
 		while (!isPartAttached())
 		{
-			target_pose.position.z -= 0.01;
+			target_pose.position.z -= 0.002;
 			GoToTarget(target_pose);
-			ros::Duration(0.5).sleep();
+			ros::Duration(interval).sleep();
 		}
 	}
 	GoToTarget(target_top_pose_1);
-	ros::Duration(0.5).sleep();
+	ros::Duration(interval).sleep();
 	GoToBinStaticPosition();
-	ros::Duration(0.5).sleep();
+	ros::Duration(interval).sleep();
 }
 
 void RobotController::deliverPart(const geometry_msgs::Pose &part_pose)
 {
 	ROS_INFO_STREAM("Droping Part");
-	ros::Duration(0.5).sleep();
+	ros::Duration(interval).sleep();
 
 	auto target_top_pose_1 = part_pose;
 	target_top_pose_1.position.z += 0.2;
 	GoToTarget(target_top_pose_1);
-	ros::Duration(1.0).sleep();
+	ros::Duration(interval).sleep();
 	auto target_pose = part_pose;
 	target_pose.position.z += 0.1;
 	GoToTarget(target_pose);
 	GripperToggle(false);
 
 	GoToTarget(target_top_pose_1);
-	ros::Duration(0.5).sleep();
+	ros::Duration(interval).sleep();
 }
-
-// void RobotController::deliverThePartinBin(OrderPart *oPart)
-// {
-
-// 	auto current_pose = oPart->getCurrentPose();
-// 	pickPart(current_pose);
-
-// 	auto end_pose = oPart->getEndPose();
-// 	deliverPart(end_pose);
-// }
-
-// bool RobotController::isPartfaulty() {
-// 	return is_faulty;
-// }
-
-//void RobotController::deliverThePartinTray(OrderPart *oPart) {
-//
-//}
