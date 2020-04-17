@@ -54,7 +54,7 @@ include_directories(include/group6_rwa5 ${catkin_INCLUDE_DIRS} )
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/ariac_manager_node.cpp)
 add_executable(main_node src/main.cpp src/robot_controller.cpp src/sensor_manager.cpp src/order_manager.cpp src/competition.cpp 
-                    src/order_part.cpp src/logical_camera_sensor.cpp src/quality_camera_sensor.cpp src/planner.cpp src/transformer.cpp src/executer.cpp src/environment.cpp)
+                    src/order_part.cpp src/logical_camera_sensor.cpp src/quality_camera_sensor.cpp src/planner.cpp src/dynamic_planner.cpp src/transformer.cpp src/executor.cpp src/environment.cpp)
 
 
 ## Add cmake target dependencies of the executable

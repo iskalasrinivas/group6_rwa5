@@ -155,13 +155,13 @@ void Planner::plan() {
 		env_->getArm2PreOrderParts()->clear();
 		env_->getArm2PreOrderParts()->emplace_back(new_shipment_to_agv2);
 	}
-	ROS_INFO_STREAM("plan: line 155");
+//	ROS_INFO_STREAM("plan: line 155");
 
 	/// Checking if anything needs to be added to arm1 to support arm2
 	std::map<std::string, std::vector<OrderPart *>> new_shipment_to_agv1;
 
 	for (auto map_it = agv2_OrderParts->begin(); map_it != agv2_OrderParts->end(); ++map_it) {
-		ROS_INFO_STREAM("plan agv2: secondloop");
+//		ROS_INFO_STREAM("plan agv2: second loop");
 		for (auto ship_it = map_it->begin(); ship_it != map_it->end(); ++ship_it) {
 
 			auto part_type = ship_it->first;

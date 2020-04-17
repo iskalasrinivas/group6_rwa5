@@ -3,6 +3,7 @@
 
 Environment::Environment() :
 all_binCamera_called(false),
+all_qualityCamera_called(false),
 all_trayCamera_called(false),
 trayCameraRequired(false),
 order_manager_status(false),

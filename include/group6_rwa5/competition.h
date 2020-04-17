@@ -42,6 +42,8 @@
 #ifndef GROUP6_RWA4_COMPETITION_H
 #define GROUP6_RWA4_COMPETITION_H
 
+#include <dynamic_planner.h>
+#include <executor.h>
 #include <algorithm>
 #include <vector>
 
@@ -59,7 +61,6 @@
 #include <trajectory_msgs/JointTrajectory.h>
 #include <environment.h>
 #include <sensor_manager.h>
-#include <executer.h>
 #include <planner.h>
 
 //class AriacOrderManager;
@@ -74,7 +75,7 @@ private:
 	Environment env_;
 	SensorManager sensor_;
 	Planner planner_;
-	Executer executer_;
+	Executor executor_;
 
 
 

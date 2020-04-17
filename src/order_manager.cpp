@@ -235,6 +235,8 @@ void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr &order_msg) {
 	auto shipments = order_msg->shipments;
 	auto agv1_OrderParts = environment->getArm1OrderParts();
 	auto agv2_OrderParts = environment->getArm2OrderParts();
+	agv1_OrderParts->clear();
+	agv2_OrderParts->clear();
 	for (const auto &shipment : shipments) {
 		std::map<std::string, std::vector<OrderPart *>> shipment_Parts;
 		auto shipment_type = shipment.shipment_type;
@@ -268,12 +270,12 @@ void OrderManager::updatePickupLocation() {
 	ros::Duration(1.0).sleep();
 
 	while (!environment->isAllBinCameraCalled()) {
-		ROS_INFO_STREAM("All Bin cameras are not called" << std::endl);
+//		ROS_INFO_STREAM("All Bin cameras are not called" << std::endl);
 		ros::Duration(0.1).sleep();
 	}
-	ROS_INFO_STREAM("updatePickupLocation : All Bin cameras are called");
+//	ROS_INFO_STREAM("updatePickupLocation : All Bin cameras are called");
 	auto sorted_all_binParts = *(environment->getSortedBinParts());
-	ROS_INFO_STREAM("updatePickupLocation : called sorted_all_binparts" << sorted_all_binParts.size() );
+//	ROS_INFO_STREAM("updatePickupLocation : TYpe of Parts:" << sorted_all_binParts.size() );
 
 	// process arm1 order parts and assign poses and mark them as assigned by deleting them!
 	for (auto orderPartsVec : (*environment->getArm1OrderParts())) {
@@ -330,5 +332,5 @@ void OrderManager::updatePickupLocation() {
 	for(size_t i=0; i<1; ++i){
 		execute_planner.publish(msg);
 	}
-	ROS_INFO_STREAM("!!! Order Mangaer has completed it's processing !!!");
+	ROS_INFO_STREAM("!!! Order Manager has completed it's processing !!!");
 }

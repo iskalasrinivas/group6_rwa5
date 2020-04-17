@@ -128,6 +128,7 @@ public:
 	explicit RobotController(std::string);
 	~RobotController();
 	bool Planner();
+	void lookupTransform();
 	void Execute();
 	void moveToTarget(geometry_msgs::Pose);
 	void GoToTarget(std::vector<geometry_msgs::Pose> waypoints);
