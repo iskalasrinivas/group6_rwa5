@@ -81,6 +81,7 @@ public:
     std::map<std::string, std::vector<OrderPart*>> getTrashParts(std::map<std::string, std::vector<geometry_msgs::Pose>>);
     bool comparePose();
     void updatePickupLocation();
+    void setConveyorOrderParts();
 };
 
 #endif //  GROUP6_RWA5_ORDER_MANAGER_H_

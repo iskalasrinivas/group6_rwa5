@@ -31,6 +31,14 @@ std::map<std::string, std::vector<geometry_msgs::Pose>>* Environment::getSortedB
 	return &sorted_all_binParts;
 }
 
+std::map<std::string, std::vector<OrderPart*>>* getArm1ConveyorOrderParts(){
+	return &arm1_conveyor_orderParts;
+}
+
+std::map<std::string, std::vector<OrderPart*>>* getArm2ConveyorOrderParts(){
+	return &arm2_conveyor_orderParts;
+}
+
 std::vector<std::map<std::string, std::vector<OrderPart*>>>* Environment::getArm1PreOrderParts(){
 	return &arm1_pre_orderParts;
 }
@@ -104,6 +112,10 @@ std::map<std::string, bool>* Environment::getTrayCamBoolMap() {
 
 std::map<std::string, bool>* Environment::getQualityCamBoolMap() {
 	return &quality_cam_bool_map_;
+ }
+
+std::map<std::string, bool>* Environment::getBeltCamBoolMap() {
+	return &belt_cam_bool_map_;
  }
 
 void Environment::setAllBinCameraCalled(const bool& cond){

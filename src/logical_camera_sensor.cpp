@@ -1,7 +1,7 @@
 #include <logical_camera_sensor.h>
 
-LogicalCameraSensor::LogicalCameraSensor(std::string topic, Environment * env, bool bc, bool tc):
-async_spinner(0), environment_(env), bincam_(bc) ,traycam_(tc), transform_(topic){
+LogicalCameraSensor::LogicalCameraSensor(std::string topic, Environment * env, bool blc, bool bc, bool tc):
+async_spinner(0), environment_(env), beltcam_(blc), bincam_(bc) ,traycam_(tc), transform_(topic), isBinPartsSorted(false){
 	async_spinner.start();
 	getCameraName(topic);
 	if (bincam_) {
@@ -12,6 +12,12 @@ async_spinner(0), environment_(env), bincam_(bc) ,traycam_(tc), transform_(topic
 		auto traycamboolmap_ = environment_->getTrayCamBoolMap();
 		(*traycamboolmap_)[cam_name]= false;
 	}
+
+	if (beltcam_) {
+		auto beltcamboolmap_ = environment_->getBeltCamBoolMap();
+		(*beltcamboolmap_)[cam_name]= false;
+	}
+
 	logical_subscriber_ = logical_nh_.subscribe(topic, 10 ,
 			&LogicalCameraSensor::logicalCameraCallback, this);
 }
@@ -32,6 +38,10 @@ std::string LogicalCameraSensor::getCameraName(std::string topic_) {
 	return cam_name;
 }
 
+void LogicalCameraSensor::setBinPartsSorted(){
+     isBinPartsSorted = true;
+}
+
 void LogicalCameraSensor::SortAllBinParts() {
 
 	auto sorted_all_binParts = environment_->getSortedBinParts();
@@ -49,7 +59,10 @@ void LogicalCameraSensor::SortAllBinParts() {
 			}
 		}
 	}
+	setBinPartsSorted();
 }
+
+
 
 void LogicalCameraSensor::logicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg) {
 	
@@ -57,6 +70,7 @@ void LogicalCameraSensor::logicalCameraCallback(const osrf_gear::LogicalCameraIm
 		ROS_INFO_STREAM("calling Logical camera");
 		auto bincammap_ = environment_->getBinCamBoolMap();
 		auto traycammap_ = environment_->getTrayCamBoolMap();
+		auto beltcammap_ = environment_->getBeltCamBoolMap();
 
 		// auto cam_name = transform_.getCameraName();
 		auto sensor_pose = image_msg->pose;
@@ -67,6 +81,8 @@ void LogicalCameraSensor::logicalCameraCallback(const osrf_gear::LogicalCameraIm
 			currentPartsPtr = environment_->getAllBinParts(); //std::map<std::string, std::map<std::string, std::vector<geometry_msgs::Pose>>>
 		} else if (traycammap_->count(cam_name)) {
 			currentPartsPtr = environment_->getAllTrayParts();
+		} else if (beltcammap_-> count(cam_name)) {
+			conveyor_belt_trigger = true;
 		}
 
 		if(currentPartsPtr->count(cam_name) == 1) {

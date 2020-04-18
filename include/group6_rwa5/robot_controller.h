@@ -135,6 +135,7 @@ public:
 	void GoToTarget(std::initializer_list<geometry_msgs::Pose>);
 	void GoToTarget(const geometry_msgs::Pose&);
 	void GoToAGV(const geometry_msgs::Pose&);
+	void flipPart(const geometry_msgs::Pose&)
 
 	void GripperToggle(const bool&);
 	void GripperCallback(const osrf_gear::VacuumGripperState::ConstPtr&);

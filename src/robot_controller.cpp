@@ -586,6 +586,20 @@ void RobotController::deliverPart(const geometry_msgs::Pose &part_pose)
 	ros::Duration(interval).sleep();
 }
 
+void RobotController::flipPart(OrderPart *order_)
+{
+	if (!order_->getFlipPart())
+	{
+		// logic to flip the part
+		auto target_pose = ; //define pose
+		arm1_.GoToTarget(target_pose);
+		arm1_.GripperToggle(false);
+		ros::Duration(0.2).sleep();
+
+		// after flipping the part set flip part = true
+		order_->setFlipPart();
+	}
+}
 
 
 

@@ -62,6 +62,10 @@ Environment * environment_;
 std::string cam_name;
 bool bincam_; // this is to know whether this object is a bin camera 
 bool traycam_;
+bool beltcam_;
+bool conveyor_belt_trigger;
+bool isBinPartsSorted;
+
 public:
 	LogicalCameraSensor(std::string, Environment *, bool, bool);
 	~LogicalCameraSensor();
@@ -69,7 +73,7 @@ public:
 	std::string getCameraName(std::string);
 	void logicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
 	void SortAllBinParts();
-
+	void setBinPartsSorted();
 
 };
 

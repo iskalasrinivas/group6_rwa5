@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 //
 	Competition mycompetition;
 
-
+`	
 	ros::waitForShutdown();
 //	}
 

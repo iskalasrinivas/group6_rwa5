@@ -17,6 +17,7 @@ class SensorManager{
     LogicalCameraSensor lcamera_bin4;
     LogicalCameraSensor lcamera_bin5;
     LogicalCameraSensor lcamera_bin6;
+    LogicalCameraSensor lcamera_belt;
     LogicalCameraSensor lcamera_agv1;
     LogicalCameraSensor lcamera_agv2;
     QualityCameraSensor qcamera_agv1;

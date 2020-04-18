@@ -19,6 +19,8 @@ class Environment{
 
     std::map<std::string, std::map<std::string, std::vector<geometry_msgs::Pose>>> all_binParts;
     std::map<std::string, std::vector<geometry_msgs::Pose>> sorted_all_binParts;
+    std::map<std::string, std::vector<OrderPart*>> arm1_conveyor_orderParts;
+    std::map<std::string, std::vector<OrderPart*>> arm2_conveyor_orderParts;
 
     std::vector<std::map<std::string, std::vector<OrderPart*> > > arm1_pre_orderParts; // to be pre-excuted by arm 1
     std::vector<std::map<std::string, std::vector<OrderPart*> > > arm2_pre_orderParts; // to be pre-excuted by arm 2
@@ -35,7 +37,8 @@ class Environment{
 	std::map<std::string, bool> tray_cam_bool_map_;
     std::map<std::string, bool> quality_cam_bool_map_;
     std::map<std::string, bool> quality_cam_see_map_;
-
+    std::map<std::string, bool> belt_cam_bool_map_;
+    
     bool all_binCamera_called;
     bool all_trayCamera_called;
     bool all_qualityCamera_called;
@@ -55,6 +58,9 @@ class Environment{
 
     std::map<std::string, std::map<std::string, std::vector<geometry_msgs::Pose> > >* getAllBinParts();
     std::map<std::string, std::vector<geometry_msgs::Pose> >* getSortedBinParts();
+    std::map<std::string, std::vector<OrderPart*>>* getArm1ConveyorOrderParts();
+    std::map<std::string, std::vector<OrderPart*>>* getArm2ConveyorOrderParts();
+    
 
     std::vector<std::map<std::string, std::vector<OrderPart* > > >* getArm1PreOrderParts();
     std::vector<std::map<std::string, std::vector<OrderPart* > > >* getArm2PreOrderParts();
@@ -72,8 +78,10 @@ class Environment{
     std::map<std::string, bool>* getBinCamBoolMap();
     std::map<std::string, bool>* getTrayCamBoolMap();
     std::map<std::string, bool>* getQualityCamBoolMap();
+    std::map<std::string, bool>* getBeltCamBoolMap();
     std::map<std::string, bool>* getQualityCamerasPartfaulty();
-
+    
+    
     bool isQualityCamera1Partfaulty();
     bool isQualityCamera2Partfaulty();    
 

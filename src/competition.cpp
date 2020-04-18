@@ -60,7 +60,7 @@ Competition::Competition()
   current_score_(0),
   sensor_(&env_),
   planner_(&env_),
-  executor_(&env_) {
+  dplan_(&env_) {
 
 	//	manager_(&comp_nh_);
 	async_spinner.start();

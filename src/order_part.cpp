@@ -44,7 +44,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 OrderPart::OrderPart(std::string agv_id, std::string part_type, geometry_msgs::Pose t_pose):
- tray_id(agv_id), part_type_(part_type), tray_pose_(t_pose), tfListener(tfBuffer) {
+ tray_id(agv_id), part_type_(part_type), tray_pose_(t_pose), tfListener(tfBuffer), flip_part(false) {
     
 	ros::AsyncSpinner async_spinner(4);
 	ROS_INFO_STREAM("New order object Created");
@@ -95,6 +95,14 @@ geometry_msgs::Pose OrderPart::getMiddlePose() const {
 
 std::string OrderPart::getTrayId(){
 	return tray_id;
+}
+
+bool OrderPart::getFlipPart() const {
+	return flip_part;
+}
+
+void OrderPart::setFlipPart(){
+	flip_part = true;
 }
 
 void OrderPart::worldTransformation() {

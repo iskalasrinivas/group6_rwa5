@@ -221,7 +221,7 @@ std::map<std::string, std::vector<OrderPart *>> OrderManager::getTrashParts(std:
 			OrderPart *trash_part = new OrderPart();
 			trash_part->setPartType(part_type);
 			trash_part->setCurrentPose(*pose_it);
-			trash_part->setEndPose(environment->getTrashBinPose()); // DONE!! xxxTO-DO --- DEFINE END_POSE of trash bin
+			trash_part->setEndPose(environment->getTrashBinPose());
 			return_var[part_type].emplace_back(trash_part);	
 		}
 	}
@@ -262,6 +262,28 @@ void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr &order_msg) {
 	}
 }
 
+void OrderManager::setConveyorOrderParts(){
+{
+	auto currentPartsPtr1 = environment_->getArm1ConveyorOrderParts();
+	auto currentPartsPtr2 = environment_->getArm2ConveyorOrderParts();
+
+	auto order_vecpart = (*orderpart_map).second;
+	if (sorted_all_binParts->count(part_type) == 0)
+	{
+		(*currentPartsPtr1)[part_type] = order_vecpart; //should we remove this from arm1OrderParts
+	}
+}
+
+		for(auto orderpart_map : agv2_OrderParts){
+			auto part_type = (*orderpart_map).first;
+			auto order_vecpart = (*orderpart_map).second; 
+			if(sorted_all_binParts->count(part_type) == 0){
+				(*currentPartsPtr2)[part_type] = order_vecpart;
+			}
+		}
+	
+}
+
 
 // Once we have order, update currentpose based on poses from binparts, if it is part of BIN OFCOURSE
 void OrderManager::updatePickupLocation() {
@@ -276,6 +298,8 @@ void OrderManager::updatePickupLocation() {
 //	ROS_INFO_STREAM("updatePickupLocation : All Bin cameras are called");
 	auto sorted_all_binParts = *(environment->getSortedBinParts());
 //	ROS_INFO_STREAM("updatePickupLocation : TYpe of Parts:" << sorted_all_binParts.size() );
+    auto conveyor_arm1_parts = environment_->getArm1ConveyorOrderParts();
+	auto conveyor_arm2_parts = environment_->getArm2ConveyorOrderParts();
 
 	// process arm1 order parts and assign poses and mark them as assigned by deleting them!
 	for (auto orderPartsVec : (*environment->getArm1OrderParts())) {
@@ -296,7 +320,31 @@ void OrderManager::updatePickupLocation() {
 						ROS_INFO_STREAM("Order Initial Pose : "<< bin_part_pose->position.x << " " << bin_part_pose->position.y << " " << bin_part_pose->position.z);
 						bin_vec.erase(bin_part_pose);
 					}
+				} else {
+					//some of the part are available
+					// choose parts available on bin from bin anbd the rest from conveyor belt
+					auto opart_it = oVecPart.begin();
+					auto bin_part_pose = bin_vec.begin();
+					std::vector<OrderPart*> vec;
+					for (opart_it = oVecPart.begin(), bin_part_pose = bin_vec.begin(); bin_part_pose != bin_vec.end(); ++opart_it, ++bin_part_pose) {
+						(*opart_it)->setCurrentPose(*bin_part_pose);
+						bin_vec.erase(bin_part_pose);
+					
+					}
+					while(opart_it != oVecPart.end()){
+					  if((*conveyor_arm1_parts).count(part_type)){
+						   (*conveyor_arm1_parts)[part_type].push_back(*opart_it);
+					  }
+					  else{
+						  vec.push_back(*opart_it);
+						  (*conveyor_arm1_parts).insert({part_type, vec});
+					  }
+					}	
 				}
+			} else {
+   				//none  of the part are available
+				// choose everythinhg from conveyor belt
+				(*conveyor_arm1_parts).insert({part_type, oVecPart}); //raja
 			}
 		}
 	}
@@ -320,10 +368,35 @@ void OrderManager::updatePickupLocation() {
 						(*opart_it)->setCurrentPose(*bin_part);
 						bin_vec.erase(bin_part);
 					}
+				} else {
+					//some of the part are available
+					//some of the part are available
+					// choose parts available on bin from bin anbd the rest from conveyor belt
+					auto opart_it = oVecPart.begin();
+					auto bin_part_pose = bin_vec.begin();
+					std::vector<OrderPart*> vec;
+					for (opart_it = oVecPart.begin(), bin_part_pose = bin_vec.begin(); bin_part_pose != bin_vec.end(); ++opart_it, ++bin_part_pose) {
+						(*opart_it)->setCurrentPose(*bin_part_pose);
+						bin_vec.erase(bin_part_pose);
+					
+					}
+					while(opart_it != oVecPart.end()){
+					  if((*conveyor_arm2_parts).count(part_type)){
+						   (*conveyor_arm2_parts)[part_type].push_back(*opart_it);
+					  }
+					  else{
+						  vec.push_back(*opart_it);
+						  (*conveyor_arm2_parts).insert({part_type, vec});
+					  }
+					}
 				}
+			} else {
+   				//none  of the part are available
+				(*conveyor_arm2_parts).insert({part_type, oVecPart}); //raja
 			}
 		}
 	}
+	
 
 	environment->setAllBinCameraCalled(false);
 	environment->setorderManagerStatus(true);

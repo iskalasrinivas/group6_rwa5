@@ -62,6 +62,8 @@
 #include <environment.h>
 #include <sensor_manager.h>
 #include <planner.h>
+#include <dynamic_planner.h>
+
 
 //class AriacOrderManager;
 
@@ -75,7 +77,7 @@ private:
 	Environment env_;
 	SensorManager sensor_;
 	Planner planner_;
-	Executor executor_;
+	DynamicPlanner dplan_;
 
 
 

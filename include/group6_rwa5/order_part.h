@@ -63,6 +63,7 @@ class OrderPart {
 
 	tf2_ros::TransformListener tfListener;
 	geometry_msgs::TransformStamped tS_w_b;
+	bool flip_part;
 	
  public:
     OrderPart();
@@ -73,6 +74,7 @@ class OrderPart {
 	void setCurrentPose(geometry_msgs::Pose);
 	void setMiddlePose(geometry_msgs::Pose);
 	void setEndPose(geometry_msgs::Pose);
+	void setFlipPart();
 	std::string getPartType() const;
 	geometry_msgs::Pose getEndPose() const;
 	geometry_msgs::Pose getTrayPose() const;
@@ -80,5 +82,6 @@ class OrderPart {
 	geometry_msgs::Pose getMiddlePose() const;
 	void worldTransformation();
 	std::string getTrayId();
+	bool getFlipPart();
 };
 #endif  // GROUP6_RWA5_ORDER_PART_H_

@@ -133,6 +133,7 @@ void DynamicPlanner::updatePickPose(OrderPart* order_) {
 	}
 	auto part_type = order_->getPartType();
 	
+	
 	if (env_->isAllBinCameraCalled()) {
 		auto allbinpart = env_->getSortedBinParts(); //std::map<std::string, std::vector<geometry_msgs::Pose> >*
 		if (allbinpart->count(part_type)) {
@@ -144,6 +145,20 @@ void DynamicPlanner::updatePickPose(OrderPart* order_) {
 	}
 }
 
+void DynamicPlanner::flipPart(OrderPart *order_)
+{
+	if (!order_->getFlipPart())
+	{
+		// logic to flip the part
+		auto target_pose = ; //define pose
+		arm1_.GoToTarget(target_pose);
+		arm1_.GripperToggle(false);
+		ros::Duration(0.2).sleep();
+
+		// after flipping the part set flip part = true
+		order_->setFlipPart();
+	}
+}
 
 void DynamicPlanner::dynamicPlanning() {
 
@@ -217,6 +232,7 @@ void DynamicPlanner::dynamicPlanning() {
 			for(auto o1_it = o1_map_it->second.begin();o1_it != o1_map_it->second.end(); ++o1_it) {
 				ROS_INFO_STREAM("<<< Order Arm1 >>>");
 				arm1_.pickPart((*o1_it)->getCurrentPose());
+				// arm1.flipPart((*o1_it));
 				arm1_.GoToQualityCameraFromBin();
 				env_->setSeeQualityCamera1(true);
 				while(not env_->isQuality1Called() ) {
@@ -249,6 +265,7 @@ void DynamicPlanner::dynamicPlanning() {
 			for(auto o2_it = o2_map_it->second.begin();o2_it != o2_map_it->second.end(); ++o2_it) {
 				ROS_INFO_STREAM("<<< Order Arm2 >>>");
 				arm2_.pickPart((*o2_it)->getCurrentPose());
+				// arm1.flipPart((*o1_it));
 				arm2_.GoToQualityCameraFromBin();
 				env_->setSeeQualityCamera2(true);
 				while(not env_->isQuality2Called() ) {
@@ -271,4 +288,17 @@ void DynamicPlanner::dynamicPlanning() {
 			}
 		}
 	}
+}
+
+bool DynamicPlanner::checkPose(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg){
+	for (auto it = image_msg->models.begin(); it != image_msg->models.end();++it) {
+			transform_.setChildPose(it->pose);
+			auto partType = it->type;
+			geometry_msgs::Pose tray_part_pose = transform_.getChildWorldPose();
+	}
+	
+}
+
+void DynamicPlanner::pickPartFromBelt(){
+	
 }
