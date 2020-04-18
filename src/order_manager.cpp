@@ -69,6 +69,7 @@ OrderManager::~OrderManager() {}
 void OrderManager::OrderCallback(const osrf_gear::Order::ConstPtr &order_msg) {
 	ROS_WARN(">>>>> OrderCallback");
 	setOrderParts(order_msg); //  Independent of bin
+	setArmForAnyParts(); // raja
 	updateAllOrder(); // check whether tray camera is called
 	updatePickupLocation();// check whether bin camera is called
 }
@@ -256,8 +257,14 @@ void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr &order_msg) {
 		}
 		if (agv_id == "agv_1") {
 			agv1_OrderParts->push_back(shipment_Parts);
-		} else {
+			
+		} else if (agv_id == "agv_2") {
 			agv2_OrderParts->push_back(shipment_Parts);
+		} else {
+			agv1_OrderParts->push_back(shipment_Parts);
+			agv2_OrderParts->push_back(shipment_Parts);
+			agv1_any.push_back(agv1_OrderParts->end()-1);
+			agv2_any.push_back(agv2_OrderParts->end()-1);
 		}
 	}
 }
@@ -407,3 +414,78 @@ void OrderManager::updatePickupLocation() {
 	}
 	ROS_INFO_STREAM("!!! Order Manager has completed it's processing !!!");
 }
+
+void OrderManager::setArmForAnyParts() {
+	auto agv1_score = 0;
+	auto agv2_score = 0;
+	auto sorted_all_binParts = *(environment->getSortedBinParts());
+	auto agv1_OrderParts = environment->getArm1OrderParts();
+	auto agv2_OrderParts = environment->getArm2OrderParts();
+
+	// we are ignoring tray parts 
+    for (auto  it_agv1 = agv1_any.begin(), auto it_agv2 = agv1_any.begin(); it_agv1 != agv1_any.end(), it_agv2 = agv2_any.end(); ++it_agv1, ++it_agv2){
+		  auto iterator_agv1_parts = *it_agv1;
+		  auto iterator_agv2_parts = *it_agv2;
+		for (auto orderPartsVec : iterator_agv1_parts){
+			for(auto orderPart : orderPartsVec){
+				  auto part_type = orderPart.first;
+				  auto part_vec = orderPart.second;
+				if(!sorted_all_binParts.count(part_type)){
+                     auto vec_bin_poses = sorted_all_binParts[part_type];
+					 auto b_it = vec_bin_poses.begin();
+					for(o_it = part_vec.begin(); o_it !=  part_vec.end(), b_it != vec_bin_poses.end(); ++o_it, ++b_it) {
+						if(b_it.position.y > -1.5 and b_it.position.y < 1.5){
+							agv1_score++;
+							agv2_score++;
+						} else if(b_it.position.y >= 1.5) {
+							agv1_score++;
+						} else if(b_it.position.y <= -1.5){
+							agv2_score++;
+						}
+					}
+				}
+			}
+		}
+
+	    if(agv1_score >= agv2_score) {
+			//we need agv1 for any
+			agv2_OrderParts->erase(*it_agv2);
+			auto shipment = *it_agv1;
+			for(auto orderPartsVec :  shipment) {
+				auto part_type = orderPart.first;
+				auto part_vec = orderPart.second;
+				for(o_it = part_vec.begin(); o_it !=  part_vec.end(); ++o_it) {
+					(*o_it)->setTrayId("agv_1");
+					(*o_it)->worldTransformation();
+			}
+
+			
+	    } else {
+			//we need agv2 for any
+			agv1_OrderParts->erase(*it_agv1);
+			auto shipment = *it_agv2;
+			for(auto orderPartsVec :  shipment) {
+				auto part_type = orderPart.first;
+				auto part_vec = orderPart.second;
+				for(o_it = part_vec.begin(); o_it !=  part_vec.end(); ++o_it) {
+					(*o_it)->setTrayId("agv_2");
+					(*o_it)->worldTransformation();
+			}
+	    }
+		agv1_score = 0;
+		agv2_score = 0;
+
+	}
+
+
+}
+
+// vec(*shipment) 
+
+// shipment (piston rod 2 and gasket 3) compare the score based  
+// all parts are availabe to arm1 , gasket is not availanbe to arm2
+// compare with tray parts and bin parts
+// arm1 cost : 2, arm2 : 3
+// delete the shipment from the agv2_order.
+//  
+//

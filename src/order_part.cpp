@@ -73,6 +73,10 @@ void OrderPart::setMiddlePose(geometry_msgs::Pose pose){
 	middle_pose_ = pose;
 }
 
+void OrderPart::setTrayId(std::string agv_id){
+	tray_id = agv_id;
+}
+
 std::string OrderPart::getPartType() const {
 	return part_type_;
 }
@@ -110,13 +114,13 @@ void OrderPart::worldTransformation() {
 	ros::Duration(2.0).sleep();
 	try {
 
-		if (tray_id == "agv_1" or tray_id == "any"){
-			tray_id = "agv_1";
+		if (tray_id == "agv_1"){
+			// tray_id = "agv_1";
 			tS_w_b = tfBuffer.lookupTransform("world", "kit_tray_1",ros::Time(0));
 		}
 
 		else if (tray_id == "agv_2" ) {
-			tray_id = "agv_2";
+			// tray_id = "agv_2";
 			tS_w_b = tfBuffer.lookupTransform("world", "kit_tray_2",ros::Time(0));
 		}
 	

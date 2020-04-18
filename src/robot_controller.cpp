@@ -591,13 +591,21 @@ void RobotController::flipPart(OrderPart *order_)
 	if (!order_->getFlipPart())
 	{
 		// logic to flip the part
-		auto target_pose = ; //define pose
-		arm1_.GoToTarget(target_pose);
-		arm1_.GripperToggle(false);
+		//define pose
+		tf2::Quaternion myQuaternion;
+		flip_intermediate_pose_.position.x = -0.045091;
+		flip_intermediate_pose_.position.y = 0.761809;
+		flip_intermediate_pose_.position.z = 1.386368;
+		flip_intermediate_pose_.orientation = myQuaternion.setRPY( 0.883791, 0.037375, 1.584601);
+
+		GoToTarget(flip_intermediate_pose_);
+		GripperToggle(false);
 		ros::Duration(0.2).sleep();
 
 		// after flipping the part set flip part = true
 		order_->setFlipPart();
+		//get pose from logical camera
+		// pickPart(pose);
 	}
 }
 

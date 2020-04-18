@@ -88,6 +88,7 @@ private:
 
 
 	geometry_msgs::Pose target_pose_;
+	geometry_msgs::Pose flip_intermediate_pose_;
 	geometry_msgs::Pose home_cart_pose_;
 	geometry_msgs::Pose static_bin_pose;
 	geometry_msgs::Pose quality_static_pose;
@@ -135,9 +136,9 @@ public:
 	void GoToTarget(std::initializer_list<geometry_msgs::Pose>);
 	void GoToTarget(const geometry_msgs::Pose&);
 	void GoToAGV(const geometry_msgs::Pose&);
-	void flipPart(const geometry_msgs::Pose&)
+	void flipPart(OrderPart *order_);
 
-	void GripperToggle(const bool&);
+	void GripperToggle(const bool &);
 	void GripperCallback(const osrf_gear::VacuumGripperState::ConstPtr&);
 	void GripperStateCheck(geometry_msgs::Pose);
 	bool isPartAttached();

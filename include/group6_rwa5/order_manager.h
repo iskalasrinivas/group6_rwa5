@@ -82,6 +82,7 @@ public:
     bool comparePose();
     void updatePickupLocation();
     void setConveyorOrderParts();
+    void setArmForAnyParts();
 };
 
 #endif //  GROUP6_RWA5_ORDER_MANAGER_H_

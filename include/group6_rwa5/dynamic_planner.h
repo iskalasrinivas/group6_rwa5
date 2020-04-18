@@ -55,6 +55,8 @@
 #include <trajectory_msgs/JointTrajectory.h>
 #include <transformer.h>
 #include <robot_controller.h>
+#include <executor.h>
+
 
 
 
@@ -64,29 +66,12 @@ private:
     ros::NodeHandle dpllaner_nh_;
 	ros::Subscriber dpllaner_sub_;
 	ros::AsyncSpinner async_spinner;
-    ros::Publisher arm_1_joint_trajectory_publisher_;
-	ros::Publisher arm_2_joint_trajectory_publisher_;
-
-	sensor_msgs::JointState arm_1_current_joint_states_;
-	sensor_msgs::JointState arm_2_current_joint_states_;
-	bool arm_1_has_been_zeroed_;
-	bool arm_2_has_been_zeroed_;
-
-	RobotController arm1_; 
-	RobotController arm2_;
+    Executor exe_;
     Environment* env_;
 
 public:
     DynamicPlanner(Environment*);
     ~DynamicPlanner();
-
-    /// Called when a new JointState message is received.
-	void arm_1_joint_state_callback(const sensor_msgs::JointState::ConstPtr & );
-
-	void arm_2_joint_state_callback(const sensor_msgs::JointState::ConstPtr &);
-
-	/// Create a JointTrajectory with all positions set to zero, and command the arm.
-	void send_arm_to_zero_state(ros::Publisher &);
 
 	void dynamicPlannerCallBack(const std_msgs::Bool::ConstPtr& );
 
@@ -98,7 +83,7 @@ public:
 	
 	void updatePickPose(OrderPart* );
 
-	void pickPartFromBelt()
+	void pickPartFromBelt(std::string, geometry_msgs::Pose , double) //raja
 
     void dynamicPlanning();
 

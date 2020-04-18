@@ -57,14 +57,38 @@
 #include <robot_controller.h>
 
 
-
 class Executor
 {
 private:
+    ros::Publisher arm_1_joint_trajectory_publisher_;
+	ros::Publisher arm_2_joint_trajectory_publisher_;
+
+	sensor_msgs::JointState arm_1_current_joint_states_;
+	sensor_msgs::JointState arm_2_current_joint_states_;
+	bool arm_1_has_been_zeroed_;
+	bool arm_2_has_been_zeroed_;
+
+	RobotController arm1_; 
+	RobotController arm2_;
 
 public:
     Executor(Environment*);
     ~Executor();
+
+    /// Called when a new JointState message is received.
+	void arm_1_joint_state_callback(const sensor_msgs::JointState::ConstPtr & );
+
+	void arm_2_joint_state_callback(const sensor_msgs::JointState::ConstPtr &);
+
+	/// Create a JointTrajectory with all positions set to zero, and command the arm.
+	void send_arm_to_zero_state(ros::Publisher &);
+
+    RobotController* getArm1Object();
+
+    RobotController* getArm2Object();
+
+
+
 
 };
 
