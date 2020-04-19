@@ -67,7 +67,7 @@ bool conveyor_belt_trigger;
 bool isBinPartsSorted;
 
 public:
-	LogicalCameraSensor(std::string, Environment *, bool, bool);
+	LogicalCameraSensor(std::string, Environment *, bool, bool, bool);
 	~LogicalCameraSensor();
 	int getcount();
 	std::string getCameraName(std::string);

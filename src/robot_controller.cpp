@@ -539,6 +539,31 @@ void RobotController::GoToQualityCameraFromBin()
 	ROS_INFO_STREAM("At quality camera check position");
 }
 
+void RobotController::pickFlipPart(const geometry_msgs::Pose &part_pose)
+{
+	ROS_INFO_STREAM("Picking Flip Part");
+	ros::Duration(interval).sleep();
+	target_right_pose_1 = part_pose;
+	target_right_pose_1.position.y -= 0.2;
+	GoToTarget(target_right_pose_1);
+	ros::Duration(interval).sleep();
+	auto target_pose = part_pose;
+	target_pose.position.y -= 0.07;
+	GoToTarget(target_pose);
+	GripperToggle(true);
+	if (!isPartAttached()) {
+		while (!isPartAttached())
+		{
+			target_pose.position.y += 0.002;
+			GoToTarget(target_pose);
+			ros::Duration(interval).sleep();
+		}
+	}
+	GoToTarget(target_top_pose_1);
+	ros::Duration(interval).sleep();
+	GoToBinStaticPosition();
+	ros::Duration(interval).sleep();
+}
 void RobotController::pickPart(const geometry_msgs::Pose &part_pose)
 {
 	ROS_INFO_STREAM("Picking Part");
@@ -593,14 +618,20 @@ void RobotController::flipPart(OrderPart *order_)
 		// logic to flip the part
 		//define pose
 		tf2::Quaternion myQuaternion;
-		flip_intermediate_pose_.position.x = -0.045091;
-		flip_intermediate_pose_.position.y = 0.761809;
-		flip_intermediate_pose_.position.z = 1.386368;
-		flip_intermediate_pose_.orientation = myQuaternion.setRPY( 0.883791, 0.037375, 1.584601);
+		flip_intermediate_pose_.position.x = -0.346613;
+		flip_intermediate_pose_.position.y = 0.257143;
+		flip_intermediate_pose_.position.z = 0.921869;
+		myQuaternion.setRPY(1.558344, 1.558344, 3.127600);
+		flip_intermediate_pose_.orientation.x = myQuaternion.x();
+		flip_intermediate_pose_.orientation.y = myQuaternion.y();
+		flip_intermediate_pose_.orientation.z = myQuaternion.z();
+		flip_intermediate_pose_.orientation.w = myQuaternion.w();
 
 		GoToTarget(flip_intermediate_pose_);
 		GripperToggle(false);
 		ros::Duration(0.2).sleep();
+		flip_intermediate_pose_.orientation.x = -myQuaternion.x();
+
 
 		// after flipping the part set flip part = true
 		order_->setFlipPart();

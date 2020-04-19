@@ -83,11 +83,11 @@ public:
 	
 	void updatePickPose(OrderPart* );
 
-	void pickPartFromBelt(std::string, geometry_msgs::Pose , double) //raja
+	void pickPartFromBelt(std::string, geometry_msgs::Pose , double); //raja
 
     void dynamicPlanning();
 
-	void flipPart(OrderPart * oPart);
+	// void flipPart(OrderPart * oPart);
 };
 
 #endif //GROUP6_RWA5_DYNAMICPLANNER_H

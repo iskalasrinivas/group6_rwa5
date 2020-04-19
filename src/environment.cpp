@@ -31,11 +31,11 @@ std::map<std::string, std::vector<geometry_msgs::Pose>>* Environment::getSortedB
 	return &sorted_all_binParts;
 }
 
-std::map<std::string, std::vector<OrderPart*>>* getArm1ConveyorOrderParts(){
+std::map<std::string, std::vector<OrderPart*>>* Environment::getArm1ConveyorOrderParts(){
 	return &arm1_conveyor_orderParts;
 }
 
-std::map<std::string, std::vector<OrderPart*>>* getArm2ConveyorOrderParts(){
+std::map<std::string, std::vector<OrderPart*>>* Environment::getArm2ConveyorOrderParts(){
 	return &arm2_conveyor_orderParts;
 }
 

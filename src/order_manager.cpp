@@ -269,29 +269,6 @@ void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr &order_msg) {
 	}
 }
 
-void OrderManager::setConveyorOrderParts(){
-{
-	auto currentPartsPtr1 = environment_->getArm1ConveyorOrderParts();
-	auto currentPartsPtr2 = environment_->getArm2ConveyorOrderParts();
-
-	auto order_vecpart = (*orderpart_map).second;
-	if (sorted_all_binParts->count(part_type) == 0)
-	{
-		(*currentPartsPtr1)[part_type] = order_vecpart; //should we remove this from arm1OrderParts
-	}
-}
-
-		for(auto orderpart_map : agv2_OrderParts){
-			auto part_type = (*orderpart_map).first;
-			auto order_vecpart = (*orderpart_map).second; 
-			if(sorted_all_binParts->count(part_type) == 0){
-				(*currentPartsPtr2)[part_type] = order_vecpart;
-			}
-		}
-	
-}
-
-
 // Once we have order, update currentpose based on poses from binparts, if it is part of BIN OFCOURSE
 void OrderManager::updatePickupLocation() {
 
@@ -305,8 +282,8 @@ void OrderManager::updatePickupLocation() {
 //	ROS_INFO_STREAM("updatePickupLocation : All Bin cameras are called");
 	auto sorted_all_binParts = *(environment->getSortedBinParts());
 //	ROS_INFO_STREAM("updatePickupLocation : TYpe of Parts:" << sorted_all_binParts.size() );
-    auto conveyor_arm1_parts = environment_->getArm1ConveyorOrderParts();
-	auto conveyor_arm2_parts = environment_->getArm2ConveyorOrderParts();
+    auto conveyor_arm1_parts = environment->getArm1ConveyorOrderParts();
+	auto conveyor_arm2_parts = environment->getArm2ConveyorOrderParts();
 
 	// process arm1 order parts and assign poses and mark them as assigned by deleting them!
 	for (auto orderPartsVec : (*environment->getArm1OrderParts())) {
@@ -418,22 +395,46 @@ void OrderManager::updatePickupLocation() {
 void OrderManager::setArmForAnyParts() {
 	auto agv1_score = 0;
 	auto agv2_score = 0;
-	auto sorted_all_binParts = *(environment->getSortedBinParts());
+	auto sorted_all_binParts = environment->getSortedBinParts();
+	auto tray1_Parts = environment->getTray1Parts();
+	auto tray2_Parts = environment->getTray2Parts();
 	auto agv1_OrderParts = environment->getArm1OrderParts();
 	auto agv2_OrderParts = environment->getArm2OrderParts();
 
-	// we are ignoring tray parts 
-    for (auto  it_agv1 = agv1_any.begin(), auto it_agv2 = agv1_any.begin(); it_agv1 != agv1_any.end(), it_agv2 = agv2_any.end(); ++it_agv1, ++it_agv2){
+	// we are not ignoring tray parts 
+    for (auto  it_agv1 = agv1_any.begin(), it_agv2 = agv2_any.begin(); it_agv1 != agv1_any.end(), it_agv2 != agv2_any.end(); ++it_agv1, ++it_agv2){
 		  auto iterator_agv1_parts = *it_agv1;
 		  auto iterator_agv2_parts = *it_agv2;
-		for (auto orderPartsVec : iterator_agv1_parts){
-			for(auto orderPart : orderPartsVec){
-				  auto part_type = orderPart.first;
-				  auto part_vec = orderPart.second;
-				if(!sorted_all_binParts.count(part_type)){
-                     auto vec_bin_poses = sorted_all_binParts[part_type];
-					 auto b_it = vec_bin_poses.begin();
+		for (auto orderPartsVec : *iterator_agv1_parts){
+			for(auto orderPart : *orderPartsVec){
+				auto part_type = orderPart.first;
+				auto part_vec = orderPart.second;
+				auto o_it = part_vec.begin()
+				std::map<std::string, std::vector<geometry_msgs::Pose> >*::iterator tray1_it, tray2_it;					
+                
+				if(tray1_Parts->count(part_type)){
+					auto tray1_poses = (*tray1_Parts)[part_type];
+					auto tray1_it = tray1_Parts->begin();
+				}
+				if(tray2_Parts->count(part_type)){
+					auto tray2_poses = (*tray2_Parts)[part_type];
+					auto tray2_it = tray2_Parts->begin();
+				}
+				if(sorted_all_binParts->count(part_type)){
+                     auto vec_bin_poses = (*sorted_all_binParts)[part_type];
+					 auto b_it = vec_bin_poses.begin(); 
+					 
 					for(o_it = part_vec.begin(); o_it !=  part_vec.end(), b_it != vec_bin_poses.end(); ++o_it, ++b_it) {
+						if(tray1_it != tray1_Parts->end()) {
+							agv1_score++;
+							agv1_score++;
+							++tray1_it;	
+						}
+						if(tray2_it != tray2_Parts->end()) {
+							agv2_score++;
+							agv2_score++;
+							++tray2_it;
+						}
 						if(b_it.position.y > -1.5 and b_it.position.y < 1.5){
 							agv1_score++;
 							agv2_score++;
@@ -451,23 +452,24 @@ void OrderManager::setArmForAnyParts() {
 			//we need agv1 for any
 			agv2_OrderParts->erase(*it_agv2);
 			auto shipment = *it_agv1;
-			for(auto orderPartsVec :  shipment) {
+			for(auto orderPart :  shipment) {
 				auto part_type = orderPart.first;
 				auto part_vec = orderPart.second;
-				for(o_it = part_vec.begin(); o_it !=  part_vec.end(); ++o_it) {
+				for(auto o_it = part_vec.begin(); o_it !=  part_vec.end(); ++o_it) {
 					(*o_it)->setTrayId("agv_1");
 					(*o_it)->worldTransformation();
-			}
+			    }   
+		    }
 
 			
 	    } else {
 			//we need agv2 for any
 			agv1_OrderParts->erase(*it_agv1);
 			auto shipment = *it_agv2;
-			for(auto orderPartsVec :  shipment) {
+			for(auto orderPart :  shipment) {
 				auto part_type = orderPart.first;
 				auto part_vec = orderPart.second;
-				for(o_it = part_vec.begin(); o_it !=  part_vec.end(); ++o_it) {
+				for(auto o_it = part_vec.begin(); o_it !=  part_vec.end(); ++o_it) {
 					(*o_it)->setTrayId("agv_2");
 					(*o_it)->worldTransformation();
 			}
@@ -475,11 +477,10 @@ void OrderManager::setArmForAnyParts() {
 		agv1_score = 0;
 		agv2_score = 0;
 
+	   }
+
 	}
-
-
 }
-
 // vec(*shipment) 
 
 // shipment (piston rod 2 and gasket 3) compare the score based  

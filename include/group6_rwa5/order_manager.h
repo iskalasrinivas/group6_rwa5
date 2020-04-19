@@ -71,6 +71,8 @@ private:
     std::vector<OrderPart*> current_order_;
     Environment *environment;
     ros::Publisher execute_planner;
+    std::vector<std::vector<std::map<std::string, std::vector<OrderPart* > > >::iterator>agv1_any;
+    std::vector<std::vector<std::map<std::string, std::vector<OrderPart* > > >::iterator>agv2_any;
 
 public:
     explicit OrderManager(Environment *);
@@ -81,7 +83,6 @@ public:
     std::map<std::string, std::vector<OrderPart*>> getTrashParts(std::map<std::string, std::vector<geometry_msgs::Pose>>);
     bool comparePose();
     void updatePickupLocation();
-    void setConveyorOrderParts();
     void setArmForAnyParts();
 };
 

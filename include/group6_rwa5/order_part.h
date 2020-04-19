@@ -76,7 +76,7 @@ class OrderPart {
 	void setEndPose(geometry_msgs::Pose);
 	void setFlipPart();
 	void setTrayId(std::string);
-	
+
 	std::string getPartType() const;
 	geometry_msgs::Pose getEndPose() const;
 	geometry_msgs::Pose getTrayPose() const;
@@ -84,6 +84,6 @@ class OrderPart {
 	geometry_msgs::Pose getMiddlePose() const;
 	void worldTransformation();
 	std::string getTrayId();
-	bool getFlipPart();
+	bool getFlipPart() const; 
 };
 #endif  // GROUP6_RWA5_ORDER_PART_H_
