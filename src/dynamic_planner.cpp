@@ -234,14 +234,50 @@ void DynamicPlanner::dynamicPlanning() {
 	}
 }
 
-bool DynamicPlanner::checkPose(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg){
-	for (auto it = image_msg->models.begin(); it != image_msg->models.end();++it) {
-			transform_.setChildPose(it->pose);
-			auto partType = it->type;
-			geometry_msgs::Pose tray_part_pose = transform_.getChildWorldPose();
+bool DynamicPlanner::checkPoseTray1(){
+	environment->setTrayCameraRequired(true);
+	if (!environment->getArm1OrderParts()->empty()) {
+		auto agv1_FirstOrder = environment->getArm1OrderParts()->begin();
+		auto r_tray1_parts = *(environment->getTray1Parts()); 
+		
+		for (auto traypart_map : r_tray1_parts) {
+			auto part_type = traypart_map.first;
+			auto part_vec = traypart_map.second;
+			if (agv1_FirstOrder->count(part_type)) {
+				for (auto O_it = (*agv1_FirstOrder)[part_type].begin(); O_it != (*agv1_FirstOrder)[part_type].end(); ++O_it) {
+					for (auto t_it = part_vec.begin(); t_it != part_vec.end(); ++t_it) {
+						if ((*O_it)->getEndPose() == *t_it) {
+							return true
+						}
+					}
+				}
+			}
+		}
 	}
-	
 }
+
+bool DynamicPlanner::checkPoseTray2(){
+	environment->setTrayCameraRequired(true);
+	if (!environment->getArm2OrderParts()->empty()) {
+		auto agv2_FirstOrder = environment->getArm2OrderParts()->begin();
+		auto r_tray2_parts = *(environment->getTray2Parts()); 
+		
+		for (auto traypart_map : r_tray2_parts) {
+			auto part_type = traypart_map.first;
+			auto part_vec = traypart_map.second;
+			if (agv2_FirstOrder->count(part_type)) {
+				for (auto O_it = (*agv2_FirstOrder)[part_type].begin(); O_it != (*agv2_FirstOrder)[part_type].end(); ++O_it) {
+					for (auto t_it = part_vec.begin(); t_it != part_vec.end(); ++t_it) {
+						if ((*O_it)->getEndPose() == *t_it) {
+							return true
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 
 // raja
 void DynamicPlanner::pickPartFromBelt(std::string arm, geometry_msgs::Pose world_part_pose, double y){
