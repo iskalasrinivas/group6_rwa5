@@ -231,7 +231,7 @@ std::map<std::string, std::vector<OrderPart *>> OrderManager::getTrashParts(std:
 
 
 void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr &order_msg) {
-	ROS_INFO_STREAM("<<<<Reading order>>>>>" << std::endl;
+	ROS_INFO_STREAM("<<<<Reading order>>>>>" << std::endl);
 	auto order_id = order_msg->order_id;
 	auto shipments = order_msg->shipments;
 	auto agv1_OrderParts = environment->getArm1OrderParts();
@@ -396,7 +396,7 @@ void OrderManager::updatePickupLocation() {
 void OrderManager::setArmForAnyParts() {
 	auto agv1_score = 0;
 	auto agv2_score = 0;
-	ROS_INFO_STREAM("<<<<setArmForAnyParts>>>>>" << std::endl;
+	ROS_INFO_STREAM("<<<<setArmForAnyParts1>>>>>" << std::endl);
 	auto sorted_all_binParts = environment->getSortedBinParts();
 	std::map<std::string, std::vector<geometry_msgs::Pose>>* tray1_Parts = environment->getTray1Parts();
 	std::map<std::string, std::vector<geometry_msgs::Pose>>* tray2_Parts = environment->getTray2Parts();
@@ -411,7 +411,7 @@ void OrderManager::setArmForAnyParts() {
 		
     			std::vector<geometry_msgs::Pose>::iterator tray1_it;					
     			std::vector<geometry_msgs::Pose>::iterator tray2_it;
-
+				ROS_INFO_STREAM("<<<<setArmForAnyParts2>>>>>" << std::endl);
 				auto part_type = orderPart.first;
 				auto part_vec = orderPart.second;
 				auto o_it = part_vec.begin();
@@ -451,7 +451,7 @@ void OrderManager::setArmForAnyParts() {
 					}
 				}
 		}
-
+		ROS_INFO_STREAM(agv1_score<<" "<<agv2_score);
 	    if(agv1_score >= agv2_score) {
 			//we need agv1 for any
 			agv2_OrderParts->erase(*it_agv2); // erase shipment from agv2
@@ -482,6 +482,8 @@ void OrderManager::setArmForAnyParts() {
 
 	}
 }
+
+
 // vec(*shipment) 
 
 // shipment (piston rod 2 and gasket 3) compare the score based  
