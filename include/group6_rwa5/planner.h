@@ -54,6 +54,7 @@ public:
     ~Planner();
     void plan();
     void target();
+    void printOrders();
 
 private:
     ros::NodeHandle planner_nh_;

@@ -46,16 +46,14 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-DynamicPlanner::DynamicPlanner(Environment* env): async_spinner(0), env_(env), arm_1_has_been_zeroed_(false), arm_2_has_been_zeroed_(false){
+DynamicPlanner::DynamicPlanner(Environment* env): async_spinner(0), env_(env), exe_(env){
 
-	// ros::AsyncSpinner async_spinner(0);
+	// ros::AsyncSpinner async_spinner(0); 
 	async_spinner.start();
 
 	dpllaner_sub_ = dpllaner_nh_.subscribe<std_msgs::Bool>("/ariac/execute_executer", 10 ,&DynamicPlanner::dynamicPlannerCallBack, this);
 
-	arm_1_joint_trajectory_publisher_ = dpllaner_nh_.advertise<trajectory_msgs::JointTrajectory>( "/ariac/arm1/arm/command", 10);
-
-	arm_2_joint_trajectory_publisher_ = dpllaner_nh_.advertise<trajectory_msgs::JointTrajectory>("/ariac/arm2/arm/command", 10);
+	
 }
 
 DynamicPlanner::~DynamicPlanner()
@@ -108,6 +106,7 @@ void DynamicPlanner::dynamicPlanning() {
 
 	ROS_INFO_STREAM("<<<<<<<In Execute modules");
 	// Execute Pre-order tasks of arm1
+	auto arm1_ = exe_.getArm1Object();
 	std::vector<std::map<std::string, std::vector<OrderPart*>>>* arm1preOrderParts = env_->getArm1PreOrderParts(); // std::vector<std::map<std::string, std::vector<OrderPart*>>>*
 	for(auto po1_vec_it = arm1preOrderParts->begin(); po1_vec_it != arm1preOrderParts->end(); ++po1_vec_it) {
 		
@@ -115,9 +114,9 @@ void DynamicPlanner::dynamicPlanning() {
 			
 			for(auto po1_it = po1_map_it->second.begin();po1_it != po1_map_it->second.end(); ++po1_it) { // pol_it is basically iterator to std::vector<OrderPart*>
 				ROS_INFO_STREAM("<<< Pre Order Arm1 >>>");
-				arm1_.pickPart((*po1_it)->getCurrentPose());
+				arm1_->pickPart((*po1_it)->getCurrentPose());
 				ROS_INFO_STREAM("<<<<<<<arm1 going to quality bin");
-				arm1_.GoToQualityCameraFromBin();
+				arm1_->GoToQualityCameraFromBin();
 				env_->setSeeQualityCamera1(true);
 				while(not env_->isQuality1Called() ) {
 					ros::Duration(0.1).sleep();
@@ -125,20 +124,21 @@ void DynamicPlanner::dynamicPlanning() {
 				}
 				if(env_->isQualityCamera1Partfaulty()) {
 					ROS_WARN_STREAM("Part is faulty");
-					arm1_.dropInTrash();
+					arm1_->dropInTrash();
 					updatePickPose((*po1_it)); 
 					--po1_it;
 				} else {
-					arm1_.deliverPart((*po1_it)->getEndPose());
+					arm1_->deliverPart((*po1_it)->getEndPose());
 				}
 				env_->setSeeQualityCamera2(true);
 			}
 		}
 	}
-	arm1_.SendRobotHome();
+	arm1_->SendRobotHome();
 
 
 	// Execute Pre-order tasks of arm2
+	auto arm2_ = exe_.getArm2Object();
 	std::vector<std::map<std::string, std::vector<OrderPart*>>>* arm2preOrderParts = env_->getArm2PreOrderParts();
 	for(auto po2_vec_it = arm2preOrderParts->begin(); po2_vec_it != arm2preOrderParts->end(); ++po2_vec_it) {
 	
@@ -146,9 +146,9 @@ void DynamicPlanner::dynamicPlanning() {
 
 			for(auto po2_it = po2_map_it->second.begin();po2_it != po2_map_it->second.end(); ++po2_it) {
 				ROS_INFO_STREAM("<<< Pre Order Arm2 >>>");
-				arm2_.pickPart((*po2_it)->getCurrentPose());
+				arm2_->pickPart((*po2_it)->getCurrentPose());
 				ROS_INFO_STREAM("<<<<<<<arm2 going to quality bin");
-				arm2_.GoToQualityCameraFromBin();
+				arm2_->GoToQualityCameraFromBin();
 				env_->setSeeQualityCamera2(true);
 				while(not env_->isQuality2Called() ) {
 					ros::Duration(0.1).sleep();
@@ -156,17 +156,17 @@ void DynamicPlanner::dynamicPlanning() {
 				}
 				if(env_->isQualityCamera2Partfaulty()) {
 					ROS_WARN_STREAM("Part is faulty");
-					arm2_.dropInTrash();
+					arm2_->dropInTrash();
 					updatePickPose((*po2_it));
 					--po2_it;
 				} else {
-					arm2_.deliverPart((*po2_it)->getEndPose());
+					arm2_->deliverPart((*po2_it)->getEndPose());
 				}
 				env_->setSeeQualityCamera2(false);
 			}
 		}
 	}
-	arm2_.SendRobotHome();
+	arm2_->SendRobotHome();
 
 	auto arm1OrderParts = env_->getArm1OrderParts(); // std::vector<std::map<std::string, std::vector<OrderPart* > > >*
 	for(auto o1_vec_it = arm1OrderParts->begin(); o1_vec_it != arm1OrderParts->end(); ++o1_vec_it) {
@@ -175,9 +175,9 @@ void DynamicPlanner::dynamicPlanning() {
 
 			for(auto o1_it = o1_map_it->second.begin();o1_it != o1_map_it->second.end(); ++o1_it) {
 				ROS_INFO_STREAM("<<< Order Arm1 >>>");
-				arm1_.pickPart((*o1_it)->getCurrentPose());
+				arm1_->pickPart((*o1_it)->getCurrentPose());
 				// arm1.flipPart((*o1_it));
-				arm1_.GoToQualityCameraFromBin();
+				arm1_->GoToQualityCameraFromBin();
 				env_->setSeeQualityCamera1(true);
 				while(not env_->isQuality1Called() ) {
 					ros::Duration(0.1).sleep();
@@ -185,13 +185,13 @@ void DynamicPlanner::dynamicPlanning() {
 				}
 				if(env_->isQualityCamera1Partfaulty()) {
 					ROS_WARN_STREAM("Part is faulty");
-					arm1_.dropInTrash();
+					arm1_->dropInTrash();
 					updatePickPose((*o1_it));
 					--o1_it;
 				} else {
 					ROS_INFO_STREAM("Part is not faulty");
 					ROS_INFO_STREAM("Dropping in AGV");
-					arm1_.deliverPart((*o1_it)->getEndPose());						
+					arm1_->deliverPart((*o1_it)->getEndPose());						
 					// if()
 					// removeItemFromOrderPart((*o1_it));
 					// deleteTheOrderPart((*o1_it));
@@ -208,9 +208,9 @@ void DynamicPlanner::dynamicPlanning() {
 
 			for(auto o2_it = o2_map_it->second.begin();o2_it != o2_map_it->second.end(); ++o2_it) {
 				ROS_INFO_STREAM("<<< Order Arm2 >>>");
-				arm2_.pickPart((*o2_it)->getCurrentPose());
+				arm2_->pickPart((*o2_it)->getCurrentPose());
 				// arm1.flipPart((*o1_it));
-				arm2_.GoToQualityCameraFromBin();
+				arm2_->GoToQualityCameraFromBin();
 				env_->setSeeQualityCamera2(true);
 				while(not env_->isQuality2Called() ) {
 					ros::Duration(0.1).sleep();
@@ -218,13 +218,13 @@ void DynamicPlanner::dynamicPlanning() {
 				}
 				if(env_->isQualityCamera1Partfaulty()) {
 					ROS_WARN_STREAM("Part is faulty");
-					arm2_.dropInTrash();
+					arm2_->dropInTrash();
 					updatePickPose((*o2_it));
 					--o2_it;
 				} else {
 					ROS_INFO_STREAM("Part is not faulty");
 					ROS_INFO_STREAM("Dropping in AGV");
-					arm2_.deliverPart((*o2_it)->getEndPose());						
+					arm2_->deliverPart((*o2_it)->getEndPose());						
 					// if()
 					// removeItemFromOrderPart((*o1_it));
 					// deleteTheOrderPart((*o1_it));
@@ -234,11 +234,13 @@ void DynamicPlanner::dynamicPlanning() {
 	}
 }
 
+
+// dinesh
 bool DynamicPlanner::checkPoseTray1(){
-	environment->setTrayCameraRequired(true);
-	if (!environment->getArm1OrderParts()->empty()) {
-		auto agv1_FirstOrder = environment->getArm1OrderParts()->begin();
-		auto r_tray1_parts = *(environment->getTray1Parts()); 
+	env_->setTrayCameraRequired(true);
+	if (!env_->getArm1OrderParts()->empty()) {
+		auto agv1_FirstOrder = env_->getArm1OrderParts()->begin();
+		auto r_tray1_parts = *(env_->getTray1Parts()); 
 		
 		for (auto traypart_map : r_tray1_parts) {
 			auto part_type = traypart_map.first;
@@ -247,7 +249,7 @@ bool DynamicPlanner::checkPoseTray1(){
 				for (auto O_it = (*agv1_FirstOrder)[part_type].begin(); O_it != (*agv1_FirstOrder)[part_type].end(); ++O_it) {
 					for (auto t_it = part_vec.begin(); t_it != part_vec.end(); ++t_it) {
 						if ((*O_it)->getEndPose() == *t_it) {
-							return true
+							return true;
 						}
 					}
 				}
@@ -256,11 +258,12 @@ bool DynamicPlanner::checkPoseTray1(){
 	}
 }
 
+// dinesh
 bool DynamicPlanner::checkPoseTray2(){
-	environment->setTrayCameraRequired(true);
-	if (!environment->getArm2OrderParts()->empty()) {
-		auto agv2_FirstOrder = environment->getArm2OrderParts()->begin();
-		auto r_tray2_parts = *(environment->getTray2Parts()); 
+	env_->setTrayCameraRequired(true);
+	if (!env_->getArm2OrderParts()->empty()) {
+		auto agv2_FirstOrder = env_->getArm2OrderParts()->begin();
+		auto r_tray2_parts = *(env_->getTray2Parts()); 
 		
 		for (auto traypart_map : r_tray2_parts) {
 			auto part_type = traypart_map.first;
@@ -269,7 +272,7 @@ bool DynamicPlanner::checkPoseTray2(){
 				for (auto O_it = (*agv2_FirstOrder)[part_type].begin(); O_it != (*agv2_FirstOrder)[part_type].end(); ++O_it) {
 					for (auto t_it = part_vec.begin(); t_it != part_vec.end(); ++t_it) {
 						if ((*O_it)->getEndPose() == *t_it) {
-							return true
+							return true;
 						}
 					}
 				}
@@ -280,34 +283,44 @@ bool DynamicPlanner::checkPoseTray2(){
 
 
 // raja
+
+bool DynamicPlanner::inVicinity(const geometry_msgs::Pose& world_part_pose, RobotController* arm_) {
+	double threshold_z = 0.1;
+	double threshold_y = 0.35;
+	return (arm_->getHomeCartPose().position.z-
+			world_part_pose.position.z < threshold_z &&
+			arm_->getHomeCartPose().position.y-
+			world_part_pose.position.y < threshold_y);
+}
+
 void DynamicPlanner::pickPartFromBelt(std::string arm, geometry_msgs::Pose world_part_pose, double y){
+    RobotController* arm_;
     if(arm == "arm1"){
-		auto arm_ = exe_.getArm1Object();
+		 arm_ = exe_.getArm1Object();
 	}
 	else if(arm == "arm2"){
-		auto arm_ = exe_.getArm2Object();
+		 arm_ = exe_.getArm2Object();
 	}
-	if (!arm_.isPartAttached()) {
+	if (!arm_->isPartAttached()) {
         world_part_pose.position.z += 0.02;
 		world_part_pose.position.y -= y; 
-		arm_.GoToTarget(world_part_pose);
-		if (inVicinity(world_part_pose)) {
+		arm_->GoToTarget(world_part_pose);
+		if (inVicinity(world_part_pose, arm_)) {
 			ROS_WARN_STREAM("Gripper toggled");
-			arm_.GripperToggle(true);
-			while (!arm_.isPartAttached()) {
+			arm_->GripperToggle(true);
+			while (!arm_->isPartAttached()) {
 				ROS_WARN_STREAM("Part not attached");
 				world_part_pose.position.z += 0.004;
 				world_part_pose.position.y -= 2*y;
-				arm_.GoToTarget(world_part_pose);
+				arm_->GoToTarget(world_part_pose);
 				world_part_pose.position.z -= 0.004;
 				world_part_pose.position.y -= 2*y;
-				arm_.GoToTarget(world_part_pose);
+				arm_->GoToTarget(world_part_pose);
 			}
 			ROS_INFO_STREAM("Part attached");
 			world_part_pose.position.z += 0.2;
 			world_part_pose.position.y -= y;
-			arm_.GoToTarget(world_part_pose);
+			arm_->GoToTarget(world_part_pose);
 		}
-	} 
-	
+	} 	
 }

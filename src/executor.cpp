@@ -46,14 +46,25 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-Executor::Executor(Environment* env): arm1_("arm1"), arm2_("arm2") {}
+Executor::Executor(Environment* env):  arm_1_has_been_zeroed_(false), arm_2_has_been_zeroed_(false) {
+    
+	arm1_ = new RobotController("arm1");
+	arm2_ = new RobotController("arm2");
+
+	arm_1_joint_trajectory_publisher_ = executer_nh_.advertise<trajectory_msgs::JointTrajectory>( "/ariac/arm1/arm/command", 10);
+
+	arm_2_joint_trajectory_publisher_ = executer_nh_.advertise<trajectory_msgs::JointTrajectory>("/ariac/arm2/arm/command", 10);
+}
 
 Executor::~Executor()
-{}
+{
+	delete arm1_;
+	delete arm2_;
+}
 
 // Called when a new JointState message is received.
 
-void DynamicPlanner::arm_1_joint_state_callback(
+void Executor::arm_1_joint_state_callback(
 		const sensor_msgs::JointState::ConstPtr & joint_state_msg)
 {
 	ROS_INFO_STREAM_THROTTLE(10,
@@ -67,7 +78,7 @@ void DynamicPlanner::arm_1_joint_state_callback(
 	}
 }
 
-void DynamicPlanner::arm_2_joint_state_callback(
+void Executor::arm_2_joint_state_callback(
 		const sensor_msgs::JointState::ConstPtr & joint_state_msg)
 {
 	ROS_INFO_STREAM_THROTTLE(10,
@@ -83,7 +94,7 @@ void DynamicPlanner::arm_2_joint_state_callback(
 
 
 /// Create a JointTrajectory with all positions set to zero, and command the arm.
-void DynamicPlanner::send_arm_to_zero_state(ros::Publisher & joint_trajectory_publisher) {
+void Executor::send_arm_to_zero_state(ros::Publisher & joint_trajectory_publisher) {
 	// Create a message to send.
 	trajectory_msgs::JointTrajectory msg;
 
@@ -109,11 +120,11 @@ void DynamicPlanner::send_arm_to_zero_state(ros::Publisher & joint_trajectory_pu
 }
 
 
-RobotController* DynamicPlanner::getArm1Object(){
+RobotController* Executor::getArm1Object(){
     return arm1_;
 }
 
-RobotController* DynamicPlanner::getArm1Object(){
+RobotController* Executor::getArm2Object(){
     return arm2_;
 }
 

@@ -64,10 +64,10 @@ class DynamicPlanner
 {
 private:
     ros::NodeHandle dpllaner_nh_;
-	ros::Subscriber dpllaner_sub_;
 	ros::AsyncSpinner async_spinner;
     Executor exe_;
     Environment* env_;
+	ros::Subscriber dpllaner_sub_;
 
 public:
     DynamicPlanner(Environment*);
@@ -85,7 +85,13 @@ public:
 
 	void pickPartFromBelt(std::string, geometry_msgs::Pose , double); //raja
 
-    void dynamicPlanning();
+    bool checkPoseTray1();
+	
+	bool checkPoseTray2();
+
+	void dynamicPlanning();
+
+	bool inVicinity(const geometry_msgs::Pose& world_part_pose, RobotController* arm_);
 
 	// void flipPart(OrderPart * oPart);
 };

@@ -231,7 +231,7 @@ std::map<std::string, std::vector<OrderPart *>> OrderManager::getTrashParts(std:
 
 
 void OrderManager::setOrderParts(const osrf_gear::Order::ConstPtr &order_msg) {
-	ROS_INFO_STREAM("<<<<Reading order>>>>>" << std::endl);
+	ROS_INFO_STREAM("<<<<Reading order>>>>>" << std::endl;
 	auto order_id = order_msg->order_id;
 	auto shipments = order_msg->shipments;
 	auto agv1_OrderParts = environment->getArm1OrderParts();
@@ -392,81 +392,83 @@ void OrderManager::updatePickupLocation() {
 	ROS_INFO_STREAM("!!! Order Manager has completed it's processing !!!");
 }
 
+
 void OrderManager::setArmForAnyParts() {
 	auto agv1_score = 0;
 	auto agv2_score = 0;
+	ROS_INFO_STREAM("<<<<setArmForAnyParts>>>>>" << std::endl;
 	auto sorted_all_binParts = environment->getSortedBinParts();
-	auto tray1_Parts = environment->getTray1Parts();
-	auto tray2_Parts = environment->getTray2Parts();
+	std::map<std::string, std::vector<geometry_msgs::Pose>>* tray1_Parts = environment->getTray1Parts();
+	std::map<std::string, std::vector<geometry_msgs::Pose>>* tray2_Parts = environment->getTray2Parts();
 	auto agv1_OrderParts = environment->getArm1OrderParts();
 	auto agv2_OrderParts = environment->getArm2OrderParts();
 
 	// we are not ignoring tray parts 
     for (auto  it_agv1 = agv1_any.begin(), it_agv2 = agv2_any.begin(); it_agv1 != agv1_any.end(), it_agv2 != agv2_any.end(); ++it_agv1, ++it_agv2){
-		  auto iterator_agv1_parts = *it_agv1;
+		  auto iterator_agv1_parts = *it_agv1; // std::map<std::string, std::vector<OrderPart *>> = shipment
 		  auto iterator_agv2_parts = *it_agv2;
-		for (auto orderPartsVec : *iterator_agv1_parts){
-			for(auto orderPart : *orderPartsVec){
+		for (const auto &orderPart : (*iterator_agv1_parts)){ // for each part type
+		
+    			std::vector<geometry_msgs::Pose>::iterator tray1_it;					
+    			std::vector<geometry_msgs::Pose>::iterator tray2_it;
+
 				auto part_type = orderPart.first;
 				auto part_vec = orderPart.second;
-				auto o_it = part_vec.begin()
-				std::map<std::string, std::vector<geometry_msgs::Pose> >*::iterator tray1_it, tray2_it;					
-                
+				auto o_it = part_vec.begin();
+				
 				if(tray1_Parts->count(part_type)){
 					auto tray1_poses = (*tray1_Parts)[part_type];
-					auto tray1_it = tray1_Parts->begin();
+					tray1_it = (*tray1_Parts)[part_type].begin();
 				}
 				if(tray2_Parts->count(part_type)){
 					auto tray2_poses = (*tray2_Parts)[part_type];
-					auto tray2_it = tray2_Parts->begin();
+					tray2_it = (*tray2_Parts)[part_type].begin();
 				}
-				if(sorted_all_binParts->count(part_type)){
-                     auto vec_bin_poses = (*sorted_all_binParts)[part_type];
-					 auto b_it = vec_bin_poses.begin(); 
+				if (sorted_all_binParts->count(part_type))
+				{
+					auto vec_bin_poses = (*sorted_all_binParts)[part_type];
+					auto b_it = vec_bin_poses.begin(); 
 					 
 					for(o_it = part_vec.begin(); o_it !=  part_vec.end(), b_it != vec_bin_poses.end(); ++o_it, ++b_it) {
-						if(tray1_it != tray1_Parts->end()) {
+						if(tray1_Parts->count(part_type) and tray1_it != (*tray1_Parts)[part_type].end()) {
 							agv1_score++;
 							agv1_score++;
 							++tray1_it;	
 						}
-						if(tray2_it != tray2_Parts->end()) {
+						if(tray2_Parts->count(part_type) and tray2_it != (*tray2_Parts)[part_type].end()) {
 							agv2_score++;
 							agv2_score++;
 							++tray2_it;
 						}
-						if(b_it.position.y > -1.5 and b_it.position.y < 1.5){
+						if(b_it->position.y > -1.5 and b_it->position.y < 1.5){
 							agv1_score++;
 							agv2_score++;
-						} else if(b_it.position.y >= 1.5) {
+						} else if(b_it->position.y >= 1.5) {
 							agv1_score++;
-						} else if(b_it.position.y <= -1.5){
+						} else if(b_it->position.y <= -1.5){
 							agv2_score++;
 						}
 					}
 				}
-			}
 		}
 
 	    if(agv1_score >= agv2_score) {
 			//we need agv1 for any
-			agv2_OrderParts->erase(*it_agv2);
+			agv2_OrderParts->erase(*it_agv2); // erase shipment from agv2
 			auto shipment = *it_agv1;
-			for(auto orderPart :  shipment) {
+			for(const auto &orderPart :  (*shipment)) {
 				auto part_type = orderPart.first;
 				auto part_vec = orderPart.second;
 				for(auto o_it = part_vec.begin(); o_it !=  part_vec.end(); ++o_it) {
 					(*o_it)->setTrayId("agv_1");
 					(*o_it)->worldTransformation();
 			    }   
-		    }
-
-			
+		    }	
 	    } else {
 			//we need agv2 for any
 			agv1_OrderParts->erase(*it_agv1);
 			auto shipment = *it_agv2;
-			for(auto orderPart :  shipment) {
+			for(const auto &orderPart :  (*shipment)) {
 				auto part_type = orderPart.first;
 				auto part_vec = orderPart.second;
 				for(auto o_it = part_vec.begin(); o_it !=  part_vec.end(); ++o_it) {
@@ -476,7 +478,6 @@ void OrderManager::setArmForAnyParts() {
 	    }
 		agv1_score = 0;
 		agv2_score = 0;
-
 	   }
 
 	}

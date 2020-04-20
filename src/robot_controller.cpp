@@ -538,12 +538,12 @@ void RobotController::GoToQualityCameraFromBin()
 	ros::Duration(interval).sleep();
 	ROS_INFO_STREAM("At quality camera check position");
 }
-
+//sanket
 void RobotController::pickFlipPart(const geometry_msgs::Pose &part_pose)
 {
 	ROS_INFO_STREAM("Picking Flip Part");
 	ros::Duration(interval).sleep();
-	target_right_pose_1 = part_pose;
+	auto target_right_pose_1 = part_pose;
 	target_right_pose_1.position.y -= 0.2;
 	GoToTarget(target_right_pose_1);
 	ros::Duration(interval).sleep();
@@ -559,7 +559,7 @@ void RobotController::pickFlipPart(const geometry_msgs::Pose &part_pose)
 			ros::Duration(interval).sleep();
 		}
 	}
-	GoToTarget(target_top_pose_1);
+	GoToTarget(target_right_pose_1);
 	ros::Duration(interval).sleep();
 	GoToBinStaticPosition();
 	ros::Duration(interval).sleep();
@@ -610,7 +610,7 @@ void RobotController::deliverPart(const geometry_msgs::Pose &part_pose)
 	GoToTarget(target_top_pose_1);
 	ros::Duration(interval).sleep();
 }
-
+//sanket
 void RobotController::flipPart(OrderPart *order_)
 {
 	if (!order_->getFlipPart())
@@ -636,7 +636,7 @@ void RobotController::flipPart(OrderPart *order_)
 		// after flipping the part set flip part = true
 		order_->setFlipPart();
 		//get pose from logical camera
-		// pickPart(pose);
+		pickFlipPart(flip_intermediate_pose_);
 	}
 }
 

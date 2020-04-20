@@ -138,7 +138,7 @@ public:
 	void GoToAGV(const geometry_msgs::Pose&);
 	void flipPart(OrderPart *order_);
 
-	void GripperToggle(const bool &);
+		void GripperToggle(const bool &);
 	void GripperCallback(const osrf_gear::VacuumGripperState::ConstPtr&);
 	void GripperStateCheck(geometry_msgs::Pose);
 	bool isPartAttached();
@@ -159,7 +159,8 @@ public:
 	void collisionAvoidance();
 
 	void pickPart(const geometry_msgs::Pose& part_pose);
-	void deliverPart(const geometry_msgs::Pose& part_pose);
+	void pickFlipPart(const geometry_msgs::Pose &part_pose);
+	void deliverPart(const geometry_msgs::Pose &part_pose);
 	void dropInAGV();
 	// void deliverThePartinBin(OrderPart * oPart);
 

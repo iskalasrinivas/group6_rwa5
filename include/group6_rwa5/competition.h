@@ -77,7 +77,7 @@ private:
 	Environment env_;
 	SensorManager sensor_;
 	Planner planner_;
-	DynamicPlanner dplan_;
+	//DynamicPlanner dplan_;
 
 
 

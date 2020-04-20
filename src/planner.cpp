@@ -114,6 +114,7 @@ Planner::~Planner()
 void Planner::plancallback(const std_msgs::Bool::ConstPtr& msg) {
 	if(msg->data) {
 		plan();
+		printOrders();
 	}
 }
 
@@ -218,6 +219,102 @@ void Planner::plan() {
 	for(size_t i=0; i<1; ++i){
 		execute_executer.publish(msg);
 	}
+}
+
+void Planner::printOrders(){
+     ROS_INFO_STREAM("In Print Order function");
+	 auto arm1_conveyor = env_->getArm1ConveyorOrderParts();
+	 auto arm2_conveyor = env_->getArm2ConveyorOrderParts();
+	 auto arm1_preorder = env_->getArm1PreOrderParts();
+	 auto arm2_preorder = env_->getArm2PreOrderParts();
+	 auto arm1_order = env_->getArm1OrderParts();
+	 auto arm2_order = env_->getArm2OrderParts();
+
+	 ROS_INFO_STREAM("Iterating through arm1 conveyor Order Parts.........");
+	 for (auto  arm1_conv_map : (*arm1_conveyor)){
+		 auto part_type = arm1_conv_map.first;
+		 auto part_vec =  arm1_conv_map.second;
+		 ROS_INFO_STREAM("Arm1 Conveyor order part type:  " << part_type);
+		 for(auto orderPart : part_vec){
+			ROS_INFO_STREAM("Arm1 Conveyor order part type:  " << orderPart->getPartType());
+			ROS_INFO_STREAM("Arm1 Conveyor order part tray_id:  " << orderPart->getTrayId());
+			ROS_INFO_STREAM("Arm1 Conveyor order part end pose:  " << orderPart->getEndPose());
+		 }
+	 } 
+     
+	 ROS_INFO_STREAM("Iterating through arm2 conveyor Order Parts.........");
+	 for (auto  arm2_conv_map : (*arm2_conveyor)){
+		 auto part_type = arm2_conv_map.first;
+		 auto part_vec =  arm2_conv_map.second;
+		 ROS_INFO_STREAM("Arm1 Conveyor order part type:  " << part_type);
+		 for(auto orderPart : part_vec){
+			ROS_INFO_STREAM("Arm1 Conveyor order part type:  " << orderPart->getPartType());
+			ROS_INFO_STREAM("Arm1 Conveyor order part tray_id:  " << orderPart->getTrayId());
+			ROS_INFO_STREAM("Arm1 Conveyor order part end pose:  " << orderPart->getEndPose());
+		 }
+	 }
+
+	 ROS_INFO_STREAM("Iterating through arm1 pre_order Parts.........");
+      for (auto orderPartsVec : (*arm1_preorder)) {
+		for (auto orderPart : orderPartsVec) {
+			auto part_type = orderPart.first;
+			auto oVecPart = orderPart.second;
+			ROS_INFO_STREAM("Arm1  pre_order part type:  " << part_type);
+			for (auto opart_it = oVecPart.begin(); opart_it != oVecPart.end(); ++opart_it){
+                ROS_INFO_STREAM("Arm1 pre_order part type:  " << (*opart_it)->getPartType());
+			    ROS_INFO_STREAM("Arm1 pre_order part tray_id:  " << (*opart_it)->getTrayId());
+			    ROS_INFO_STREAM("Arm1 pre_order part end pose:  " << (*opart_it)->getEndPose());
+			    ROS_INFO_STREAM("Arm1 pre_order part current pose:  " << (*opart_it)->getCurrentPose());
+			}
+		}
+	 }
+
+     ROS_INFO_STREAM("Iterating through arm2 pre_order Parts.........");
+	 for (auto orderPartsVec : (*arm2_preorder)) {
+		for (auto orderPart : orderPartsVec) {
+			auto part_type = orderPart.first;
+			auto oVecPart = orderPart.second;
+			ROS_INFO_STREAM("Arm2  pre_order part type:  " << part_type);
+			for (auto opart_it = oVecPart.begin(); opart_it != oVecPart.end(); ++opart_it){
+                ROS_INFO_STREAM("Arm2 pre_order part type:  " << (*opart_it)->getPartType());
+			    ROS_INFO_STREAM("Arm2 pre_order part tray_id:  " << (*opart_it)->getTrayId());
+			    ROS_INFO_STREAM("Arm2 pre_order part end pose:  " << (*opart_it)->getEndPose());
+			    ROS_INFO_STREAM("Arm2 pre_order part current pose:  " << (*opart_it)->getCurrentPose());
+			}
+		}
+	 }
+
+     ROS_INFO_STREAM("Iterating through arm1 Order Parts.........");
+	 for (auto orderPartsVec : (*arm1_order)) {
+		for (auto orderPart : orderPartsVec) {
+			auto part_type = orderPart.first;
+			auto oVecPart = orderPart.second;
+			ROS_INFO_STREAM("Arm1 order part type:  " << part_type);
+			for (auto opart_it = oVecPart.begin(); opart_it != oVecPart.end(); ++opart_it){
+                ROS_INFO_STREAM("Arm1 order part type:  " << (*opart_it)->getPartType());
+			    ROS_INFO_STREAM("Arm1 order part tray_id:  " << (*opart_it)->getTrayId());
+			    ROS_INFO_STREAM("Arm1 order part end pose:  " << (*opart_it)->getEndPose());
+			    ROS_INFO_STREAM("Arm1 order part current pose:  " << (*opart_it)->getCurrentPose());
+			}
+		}
+	 }
+     
+	 ROS_INFO_STREAM("Iterating through arm2 Order Parts.........");
+	 for (auto orderPartsVec : (*arm2_order)) {
+		for (auto orderPart : orderPartsVec) {
+			auto part_type = orderPart.first;
+			auto oVecPart = orderPart.second;
+			ROS_INFO_STREAM("Arm2 order part type:  " << part_type);
+			for (auto opart_it = oVecPart.begin(); opart_it != oVecPart.end(); ++opart_it){
+                ROS_INFO_STREAM("Arm2 order part type:  " << (*opart_it)->getPartType());
+			    ROS_INFO_STREAM("Arm2 order part tray_id:  " << (*opart_it)->getTrayId());
+			    ROS_INFO_STREAM("Arm2 order part end pose:  " << (*opart_it)->getEndPose());
+			    ROS_INFO_STREAM("Arm2 order part current pose:  " << (*opart_it)->getCurrentPose());
+			}
+		}
+	 }
+
+
 }
 
 
