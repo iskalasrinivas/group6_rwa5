@@ -411,7 +411,6 @@ void OrderManager::setArmForAnyParts() {
 		
     			std::vector<geometry_msgs::Pose>::iterator tray1_it;					
     			std::vector<geometry_msgs::Pose>::iterator tray2_it;
-				ROS_INFO_STREAM("<<<<setArmForAnyParts2>>>>>" << std::endl);
 				auto part_type = orderPart.first;
 				auto part_vec = orderPart.second;
 				auto o_it = part_vec.begin();
