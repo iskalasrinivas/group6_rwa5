@@ -10,7 +10,7 @@ lcamera_common_bin("/ariac/logical_camera_4", env_, false, true, false),
 lcamera_bin4("/ariac/logical_camera_5", env_, false, true, false),
 lcamera_bin5("/ariac/logical_camera_6", env_, false, true, false),
 lcamera_bin6("/ariac/logical_camera_7", env_, false, true, false),
-lcamera_belt("/ariac/logical_camera_9", env_, true, false, false),
+// lcamera_belt("/ariac/logical_camera_9", env_, true, false, false),
 lcamera_agv2("/ariac/logical_camera_8", env_, false, false, true),
 qcamera_agv1("/ariac/quality_control_sensor_1", env_),
 qcamera_agv2("/ariac/quality_control_sensor_2", env_) {

@@ -39,7 +39,7 @@ std::string LogicalCameraSensor::getCameraName(std::string topic_) {
 }
 
 void LogicalCameraSensor::setBinPartsSorted(){
-     isBinPartsSorted = true;
+	isBinPartsSorted = true;
 }
 
 void LogicalCameraSensor::SortAllBinParts() {
@@ -62,28 +62,38 @@ void LogicalCameraSensor::SortAllBinParts() {
 	setBinPartsSorted();
 }
 
-
-
 void LogicalCameraSensor::logicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg) {
-	
+	if( beltcam_ == true) {
+		beltLogicalCameraCallback(image_msg);
+	} else {
+		staticLogicalCameraCallback(image_msg);
+	}
+}
+void LogicalCameraSensor::beltLogicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg) {
+
+}
+
+void LogicalCameraSensor::staticLogicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg) {
+
 	if(environment_->isBinCameraRequired() or environment_->isTrayCameraRequired()) {
 		ROS_INFO_STREAM("calling Logical camera");
 		auto bincammap_ = environment_->getBinCamBoolMap();
-		auto traycammap_ = environment_->getTrayCamBoolMap();
-		auto beltcammap_ = environment_->getBeltCamBoolMap();
+		auto traycammap_ = environment_->getTrayCamBoolMap(); //std::map<std::string, bool>*
+		// auto beltcammap_ = environment_->getBeltCamBoolMap();
 
 		// auto cam_name = transform_.getCameraName();
 		auto sensor_pose = image_msg->pose;
 		transform_.setParentPose(sensor_pose);
-		
+
 		std::map<std::string, std::map<std::string, std::vector<geometry_msgs::Pose>>>* currentPartsPtr;
 		if (bincammap_->count(cam_name)) {
 			currentPartsPtr = environment_->getAllBinParts(); //std::map<std::string, std::map<std::string, std::vector<geometry_msgs::Pose>>>
 		} else if (traycammap_->count(cam_name)) {
 			currentPartsPtr = environment_->getAllTrayParts();
-		} else if (beltcammap_-> count(cam_name)) {
-			conveyor_belt_trigger = true;
 		}
+		// } else if (beltcammap_-> count(cam_name)) {
+		// conveyor_belt_trigger = true;
+		// }
 
 		if(currentPartsPtr->count(cam_name) == 1) {
 			(*currentPartsPtr)[cam_name].clear();

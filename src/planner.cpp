@@ -1,16 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * @file      include/competition.h
  * @brief     Header file for competition
@@ -130,9 +117,9 @@ void Planner::plan() {
 	std::map<std::string, std::vector<OrderPart *>> new_shipment_to_agv2;
 
 	for (auto map_it = agv1_OrderParts->begin(); map_it != agv1_OrderParts->end(); ++map_it) {
-		ROS_INFO_STREAM("plan agv1: first loop");
+		// ROS_INFO_STREAM("plan agv1: first loop");
 		for (auto ship_it = map_it->begin(); ship_it != map_it->end(); ++ship_it) {
-			ROS_INFO_STREAM("plan agv1: second loop");
+			// ROS_INFO_STREAM("plan agv1: second loop");
 			auto part_type = (*ship_it).first;
 
 			for (auto ord_it = (*ship_it).second.begin(); ord_it != (*ship_it).second.end(); ++ord_it) {
@@ -140,7 +127,7 @@ void Planner::plan() {
 				if ((*ord_it)->getCurrentPose().position.y < -1.5)
 				{ // order part is not reachable To-DO ----- make sure value is right
 					// add a copy of this part to agv2 order parts
-					ROS_INFO_STREAM("Part is not reachable by arm-1, pose : " << (*ord_it)->getCurrentPose());
+					ROS_INFO_STREAM("Part is not reachable by arm-1, part: " << (*ord_it)->getPartType() << (*ord_it)->getCurrentPose());
 					OrderPart* part = new OrderPart();
 					part->setPartType((*ord_it)->getPartType());
 					part->setCurrentPose((*ord_it)->getCurrentPose());
@@ -149,7 +136,7 @@ void Planner::plan() {
 					if( common_pose_ind <= 3) {
 						part->setEndPose(common_pose_[common_pose_ind]);
 						(*ord_it)->setCurrentPose(common_pose_[common_pose_ind]);
-						ROS_INFO_STREAM("PO1 :" << (*ord_it)->getPartType() << " " << (*ord_it)-> getEndPose());
+						// ROS_INFO_STREAM("PO1 :" << (*ord_it)->getPartType() << " " << (*ord_it)-> getEndPose());
 						if(common_pose_ind==3) common_pose_ind=0;
 						else ++common_pose_ind;
 					}
@@ -164,12 +151,11 @@ void Planner::plan() {
 			}
 		}
 	}
-	ROS_INFO_STREAM("plan: out of first loop");
+	// ROS_INFO_STREAM("plan: out of first loop");
 	if(new_shipment_to_agv2.size()) {
 		env_->getArm2PreOrderParts()->clear();
 		env_->getArm2PreOrderParts()->emplace_back(new_shipment_to_agv2);
 	}
-//	ROS_INFO_STREAM("plan: line 155");
 
 	/// Checking if anything needs to be added to arm1 to support arm2
 	std::map<std::string, std::vector<OrderPart *>> new_shipment_to_agv1;
@@ -188,12 +174,13 @@ void Planner::plan() {
 					OrderPart *part = new OrderPart();
 					part->setPartType((*ord_it)->getPartType());
 					part->setCurrentPose((*ord_it)->getCurrentPose());
+					ROS_INFO_STREAM("Part is not reachable by arm-, part: " << (*ord_it)->getPartType() << (*ord_it)->getCurrentPose());
 					// TO-DO ---- set ommon bin pose so that arm1 can pick it from there.
 					// add it to the beginning of agv2 as a new shipment
 					if( common_pose_ind <= 3) {
 						part->setEndPose(common_pose_[common_pose_ind]);
 						(*ord_it)->setCurrentPose(common_pose_[common_pose_ind]);
-						ROS_INFO_STREAM("PO2 :" << (*ord_it)->getPartType() << " " << (*ord_it)-> getEndPose());
+						// ROS_INFO_STREAM("PO2 :" << (*ord_it)->getPartType() << " " << (*ord_it)-> getEndPose());
 						if(common_pose_ind==3) common_pose_ind=0;
 						else ++common_pose_ind;
 					}
@@ -208,8 +195,7 @@ void Planner::plan() {
 		}
 	}
 
-	if (new_shipment_to_agv1.size())
-	{
+	if (new_shipment_to_agv1.size()) {
 		env_->getArm1PreOrderParts()->clear();
 		env_->getArm1PreOrderParts()->emplace_back(new_shipment_to_agv1);
 	}
@@ -224,101 +210,72 @@ void Planner::plan() {
 void Planner::printOrders(){
      ROS_INFO_STREAM("In Print Order function");
 	 auto arm1_conveyor = env_->getArm1ConveyorOrderParts();
-	 auto arm2_conveyor = env_->getArm2ConveyorOrderParts();
-	 auto arm1_preorder = env_->getArm1PreOrderParts();
-	 auto arm2_preorder = env_->getArm2PreOrderParts();
-	 auto arm1_order = env_->getArm1OrderParts();
-	 auto arm2_order = env_->getArm2OrderParts();
-
-	 ROS_INFO_STREAM("Iterating through arm1 conveyor Order Parts.........");
+	
+	 ROS_INFO_STREAM("Iterating through arm1 Conveyor Order Parts.........");
 	 for (auto  arm1_conv_map : (*arm1_conveyor)){
 		 auto part_type = arm1_conv_map.first;
-		 auto part_vec =  arm1_conv_map.second;
-		 ROS_INFO_STREAM("Arm1 Conveyor order part type:  " << part_type);
-		 for(auto orderPart : part_vec){
-			ROS_INFO_STREAM("Arm1 Conveyor order part type:  " << orderPart->getPartType());
-			ROS_INFO_STREAM("Arm1 Conveyor order part tray_id:  " << orderPart->getTrayId());
-			ROS_INFO_STREAM("Arm1 Conveyor order part end pose:  " << orderPart->getEndPose());
-		 }
+		 auto oVecPart =  arm1_conv_map.second;
+		 ROS_INFO_STREAM("Arm1 Conveyor part type, size, tray_id:  " << part_type << " "<< oVecPart.size() << " "<< (*(oVecPart.begin()))->getTrayId());
 	 } 
-     
+     ROS_INFO_STREAM(std::endl);
+
+	 auto arm2_conveyor = env_->getArm2ConveyorOrderParts();
 	 ROS_INFO_STREAM("Iterating through arm2 conveyor Order Parts.........");
 	 for (auto  arm2_conv_map : (*arm2_conveyor)){
 		 auto part_type = arm2_conv_map.first;
-		 auto part_vec =  arm2_conv_map.second;
-		 ROS_INFO_STREAM("Arm1 Conveyor order part type:  " << part_type);
-		 for(auto orderPart : part_vec){
-			ROS_INFO_STREAM("Arm1 Conveyor order part type:  " << orderPart->getPartType());
-			ROS_INFO_STREAM("Arm1 Conveyor order part tray_id:  " << orderPart->getTrayId());
-			ROS_INFO_STREAM("Arm1 Conveyor order part end pose:  " << orderPart->getEndPose());
-		 }
-	 }
+		 auto oVecPart =  arm2_conv_map.second;
+		 ROS_INFO_STREAM("Arm2 Conveyor part type, size, tray_id:  " << part_type << " "<< oVecPart.size() << " "<< (*(oVecPart.begin()))->getTrayId());
 
-	 ROS_INFO_STREAM("Iterating through arm1 pre_order Parts.........");
+	 }
+	ROS_INFO_STREAM(std::endl);
+
+	auto arm1_preorder = env_->getArm1PreOrderParts();
+	ROS_INFO_STREAM("Iterating through arm1 Pre_order Parts.........");
       for (auto orderPartsVec : (*arm1_preorder)) {
 		for (auto orderPart : orderPartsVec) {
 			auto part_type = orderPart.first;
 			auto oVecPart = orderPart.second;
-			ROS_INFO_STREAM("Arm1  pre_order part type:  " << part_type);
-			for (auto opart_it = oVecPart.begin(); opart_it != oVecPart.end(); ++opart_it){
-                ROS_INFO_STREAM("Arm1 pre_order part type:  " << (*opart_it)->getPartType());
-			    ROS_INFO_STREAM("Arm1 pre_order part tray_id:  " << (*opart_it)->getTrayId());
-			    ROS_INFO_STREAM("Arm1 pre_order part end pose:  " << (*opart_it)->getEndPose());
-			    ROS_INFO_STREAM("Arm1 pre_order part current pose:  " << (*opart_it)->getCurrentPose());
-			}
+		    ROS_INFO_STREAM("Arm1 pre_order part type, size, tray_id:  " << part_type << " "<< oVecPart.size() << " "<< (*(oVecPart.begin()))->getTrayId());
+
 		}
 	 }
+	ROS_INFO_STREAM(std::endl);
 
-     ROS_INFO_STREAM("Iterating through arm2 pre_order Parts.........");
+	auto arm2_preorder = env_->getArm2PreOrderParts();
+	ROS_INFO_STREAM("Iterating through arm2 Pre_order Parts.........");
 	 for (auto orderPartsVec : (*arm2_preorder)) {
 		for (auto orderPart : orderPartsVec) {
 			auto part_type = orderPart.first;
 			auto oVecPart = orderPart.second;
-			ROS_INFO_STREAM("Arm2  pre_order part type:  " << part_type);
-			for (auto opart_it = oVecPart.begin(); opart_it != oVecPart.end(); ++opart_it){
-                ROS_INFO_STREAM("Arm2 pre_order part type:  " << (*opart_it)->getPartType());
-			    ROS_INFO_STREAM("Arm2 pre_order part tray_id:  " << (*opart_it)->getTrayId());
-			    ROS_INFO_STREAM("Arm2 pre_order part end pose:  " << (*opart_it)->getEndPose());
-			    ROS_INFO_STREAM("Arm2 pre_order part current pose:  " << (*opart_it)->getCurrentPose());
-			}
+		    ROS_INFO_STREAM("Arm2 pre_order  part type, size, tray_id:  " << part_type << " "<< oVecPart.size() << " "<< (*(oVecPart.begin()))->getTrayId());
+
 		}
 	 }
+	ROS_INFO_STREAM(std::endl);
 
-     ROS_INFO_STREAM("Iterating through arm1 Order Parts.........");
+	auto arm1_order = env_->getArm1OrderParts();
+	ROS_INFO_STREAM("Iterating through arm1 Order Parts.........");
 	 for (auto orderPartsVec : (*arm1_order)) {
 		for (auto orderPart : orderPartsVec) {
 			auto part_type = orderPart.first;
 			auto oVecPart = orderPart.second;
-			ROS_INFO_STREAM("Arm1 order part type:  " << part_type);
-			for (auto opart_it = oVecPart.begin(); opart_it != oVecPart.end(); ++opart_it){
-                ROS_INFO_STREAM("Arm1 order part type:  " << (*opart_it)->getPartType());
-			    ROS_INFO_STREAM("Arm1 order part tray_id:  " << (*opart_it)->getTrayId());
-			    ROS_INFO_STREAM("Arm1 order part end pose:  " << (*opart_it)->getEndPose());
-			    ROS_INFO_STREAM("Arm1 order part current pose:  " << (*opart_it)->getCurrentPose());
-			}
+			ROS_INFO_STREAM("Arm1 order part type, size, tray_id:  " << part_type << " "<< oVecPart.size() << " "<< (*(oVecPart.begin()))->getTrayId());
+
 		}
 	 }
-     
-	 ROS_INFO_STREAM("Iterating through arm2 Order Parts.........");
+    ROS_INFO_STREAM(std::endl);
+
+	auto arm2_order = env_->getArm2OrderParts(); //std::map<std::string, std::vector<OrderPart*>>*
+	ROS_INFO_STREAM("Iterating through arm2 Order Parts.........");
 	 for (auto orderPartsVec : (*arm2_order)) {
 		for (auto orderPart : orderPartsVec) {
 			auto part_type = orderPart.first;
 			auto oVecPart = orderPart.second;
-			ROS_INFO_STREAM("Arm2 order part type:  " << part_type);
-			for (auto opart_it = oVecPart.begin(); opart_it != oVecPart.end(); ++opart_it){
-                ROS_INFO_STREAM("Arm2 order part type:  " << (*opart_it)->getPartType());
-			    ROS_INFO_STREAM("Arm2 order part tray_id:  " << (*opart_it)->getTrayId());
-			    ROS_INFO_STREAM("Arm2 order part end pose:  " << (*opart_it)->getEndPose());
-			    ROS_INFO_STREAM("Arm2 order part current pose:  " << (*opart_it)->getCurrentPose());
-			}
+		   ROS_INFO_STREAM("Arm2 order part type, size, tray_id:  " << part_type << " "<< oVecPart.size() << " "<< (*(oVecPart.begin()))->getTrayId());
+
 		}
 	 }
-
-
 }
-
-
-
 
 // find Unreachable Parts for agv1 from the agv1 order
 

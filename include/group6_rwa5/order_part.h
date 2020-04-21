@@ -59,7 +59,8 @@ class OrderPart {
 	geometry_msgs::Pose middle_pose_;
 	std::string tray_id;
 
-	tf2_ros::Buffer tfBuffer;
+	static int count;
+	static tf2_ros::Buffer tfBuffer;
 
 	tf2_ros::TransformListener tfListener;
 	geometry_msgs::TransformStamped tS_w_b;

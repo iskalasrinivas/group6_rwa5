@@ -67,11 +67,13 @@ bool conveyor_belt_trigger;
 bool isBinPartsSorted;
 
 public:
-	LogicalCameraSensor(std::string, Environment *, bool, bool, bool);
+	LogicalCameraSensor(std::string, Environment *, bool, bool, bool); // belt, bin, tray
 	~LogicalCameraSensor();
 	int getcount();
 	std::string getCameraName(std::string);
 	void logicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
+	void beltLogicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
+	void staticLogicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
 	void SortAllBinParts();
 	void setBinPartsSorted();
 

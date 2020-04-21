@@ -238,6 +238,7 @@ void DynamicPlanner::dynamicPlanning() {
 // dinesh
 bool DynamicPlanner::checkPoseTray1(){
 	env_->setTrayCameraRequired(true);
+	bool answer = false;
 	if (!env_->getArm1OrderParts()->empty()) {
 		auto agv1_FirstOrder = env_->getArm1OrderParts()->begin();
 		auto r_tray1_parts = *(env_->getTray1Parts()); 
@@ -256,6 +257,7 @@ bool DynamicPlanner::checkPoseTray1(){
 			}
 		}
 	}
+	return answer;
 }
 
 // dinesh

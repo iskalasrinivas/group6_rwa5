@@ -2,7 +2,6 @@
 #include <sstream>
 #include <transformer.h>
 
-
 Transformer::Transformer(const std::string & topic): topic_(topic),tf_listener(tf_buffer){
     getCameraName();
     child_ = parent_ + "_child";
