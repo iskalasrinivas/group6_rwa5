@@ -69,5 +69,6 @@
         "set": "cpp",
         "string": "cpp",
         "forward_list": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": true
 }

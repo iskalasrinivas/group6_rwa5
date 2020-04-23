@@ -7,6 +7,9 @@ Transformer::Transformer(const std::string & topic): topic_(topic),tf_listener(t
     child_ = parent_ + "_child";
 }
 
+Transformer::Transformer(): tf_listener(tf_buffer){
+}
+
 Transformer::~Transformer(){}
 
 std::string Transformer::getCameraName() {
@@ -20,6 +23,10 @@ std::string Transformer::getCameraName() {
 	return parent_;
 }
 
+void Transformer::fromCameraName(std::string camera_name){
+	parent_ =  camera_name;
+	child_ = parent_ + "_child";
+}
 
 void Transformer::setParentPose(const geometry_msgs::Pose & sensor_pose) {
     auto current_time = ros::Time::now();

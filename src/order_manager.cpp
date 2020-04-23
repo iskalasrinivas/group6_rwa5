@@ -316,11 +316,11 @@ void OrderManager::updatePickupLocation() {
 					while(opart_it != oVecPart.end()){
 						if((*conveyor_arm1_parts).count(part_type)){
 							(*conveyor_arm1_parts)[part_type].push_back(*opart_it);
-							oVecPart.erase(opart_it);
+							// oVecPart.erase(opart_it);
 						} else {
 							vec.push_back(*opart_it);
 							(*conveyor_arm1_parts).insert({part_type, vec});
-							oVecPart.erase(opart_it);
+							// oVecPart.erase(opart_it);
 						}
 					}	
 				}
@@ -328,7 +328,7 @@ void OrderManager::updatePickupLocation() {
 				//none  of the part are available in bins // choose everythinhg from conveyor belt
 				(*conveyor_arm1_parts).insert({part_type, oVecPart}); //raja
 				ROS_INFO_STREAM("Erasing part from arm1");
-				orderPartsVec.erase(part_type);
+				// orderPartsVec.erase(part_type);
 			}
 		}
 	}
@@ -366,12 +366,11 @@ void OrderManager::updatePickupLocation() {
 					while(opart_it != oVecPart.end()){
 						if((*conveyor_arm2_parts).count(part_type)){
 							(*conveyor_arm2_parts)[part_type].push_back(*opart_it);
-							oVecPart.erase(opart_it);
-						}
-						else{
+							// oVecPart.erase(opart_it);
+						} else {
 							vec.push_back(*opart_it);
 							(*conveyor_arm2_parts).insert({part_type, vec});
-							oVecPart.erase(opart_it);
+							// oVecPart.erase(opart_it);
 						}
 					}
 				}
@@ -379,7 +378,7 @@ void OrderManager::updatePickupLocation() {
 				//none  of the parts are available in bins // choose everythinhg from conveyor belt
 				(*conveyor_arm2_parts).insert({part_type, oVecPart}); //raja
 				ROS_INFO_STREAM("Erasing part from arm2");
-				orderPartsVec.erase(part_type);
+				// orderPartsVec.erase(part_type);
 			}
 		}
 	}
@@ -493,6 +492,7 @@ void OrderManager::setArmForAnyParts() {
 		if(agv1_score >= agv2_score) {
 			//we need agv1 for any
 			agv2_OrderParts->erase(*it_agv2); // erase shipment from agv2
+			ROS_INFO_STREAM("erased");
 			auto shipment = *it_agv1;
 			for(const auto &orderPart :  (*shipment)) {
 				auto part_type = orderPart.first;

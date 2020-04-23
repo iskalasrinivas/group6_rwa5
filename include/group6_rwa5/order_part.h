@@ -75,7 +75,7 @@ class OrderPart {
 	void setCurrentPose(geometry_msgs::Pose);
 	void setMiddlePose(geometry_msgs::Pose);
 	void setEndPose(geometry_msgs::Pose);
-	void setFlipPart();
+	void setFlipPart(const bool &);
 	void setTrayId(std::string);
 
 	std::string getPartType() const;

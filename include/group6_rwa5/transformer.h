@@ -66,6 +66,7 @@ class Transformer {
     void setPose(const geometry_msgs::Pose , geometry_msgs::TransformStamped &);
     void setPose(const geometry_msgs::TransformStamped &, geometry_msgs::Pose &);
     geometry_msgs::Pose getChildWorldPose();
+    void fromCameraName(std::string camera_name)
 
     private:
     std::string topic_;

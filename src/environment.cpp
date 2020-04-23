@@ -31,7 +31,8 @@ std::map<std::string, std::vector<geometry_msgs::Pose>>* Environment::getSortedB
 	return &sorted_all_binParts;
 }
 
-std::map<std::string, std::vector<OrderPart*>>* Environment::getArm1ConveyorOrderParts(){
+std::map<std::string, std::vector<OrderPart*>>* Environment::
+(){
 	return &arm1_conveyor_orderParts;
 }
 
@@ -173,4 +174,52 @@ bool Environment::isQuality1Called() {
 
 bool Environment::isQuality2Called() {
 	return all_qualityCamera_called["quality_control_sensor_2"];
+}
+
+void Environment::setConveyor1Trigger(const bool& status) {
+	conveyorTrigger = status;
+}
+
+bool Environment::isConveyor1Triggered() const {
+	return conveyorTrigger;
+}
+
+void Environment::setConveyor2Trigger(const bool& status) {
+	conveyorTrigger = status;
+}
+
+bool Environment::isConveyor2Triggered() const {
+	return conveyorTrigger;
+}
+
+void createBeltArm2PickupLocation(geometry_msgs::Pose pose){
+	if(arm2pickuplocation == nullptr) {
+		arm2pickuplocation = new geometry_msgs::Pose(pose);
+	}
+}
+
+void createBeltArm1PickupLocation(geometry_msgs::Pose pose){
+	if(arm1pickuplocation == nullptr) {
+		arm1pickuplocation = new geometry_msgs::Pose(pose);
+	}
+}
+
+void setBeltArm2PickupLocation(geometry_msgs::Pose pose){
+	arm2pickuplocation = pose;
+}
+
+void setBeltArm1PickupLocation(geometry_msgs::Pose pose){
+	
+	arm1pickuplocation = new geometry_msgs::Pose(pose);
+}
+
+void clearArm2PickupLocation(geometry_msgs::Pose pose){
+	delete arm2pickuplocation;
+	arm2pickuplocation = nullptr;	
+}
+
+void clearBeltArm1PickupLocation(geometry_msgs::Pose pose) {
+	delete arm1pickuplocation;
+	arm1pickuplocation = nullptr;
+
 }

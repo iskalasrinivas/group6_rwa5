@@ -1,6 +1,6 @@
 /**
- * @file      include/logical_camera_sensor.h
- * @brief     Header file for Sensor
+ * @file      include/available_bin_poses.h
+ * @brief     Header file for competition
  * @author    Saurav Kumar
  * @author    Raja Srinivas
  * @author    Sanket Acharya
@@ -39,44 +39,40 @@
  *OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GROUP6_RWA5_LOGICAL_CAMERA_SENSOR_H_
-#define GROUP6_RWA5_LOGICAL_CAMERA_SENSOR_H_
+#ifndef GROUP6_RWA5_AVAILABLEBINPOSE_H
+#define GROUP6_RWA5_AVAILABLEBINPOSE_H
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <osrf_gear/LogicalCameraImage.h>
+#include <ros/ros.h>
+#include <geometry_msgs/Pose.h>
 #include <transformer.h>
 #include <environment.h>
 
+class AvailableBinPoses
+{
+public:
+  AvailableBinPoses();
+  ~AvailableBinPoses();
 
+  Transformer transform_;
+  Environment* env_;
 
+  geometry_msgs::Pose getAvailableBinPoseArm1(); // returns a pose available in one of the 3bins for arm2
+  geometry_msgs::Pose getAvailableBinPoseArm2(); // returns a pose available in one of the 3bins for arm1
 
-class LogicalCameraSensor {
+  void addToAvailableBinPosesArm1(std::string, geometry_msgs::Pose);        // add a pose to a camera in arm1 reach i.e. 3 bins
+  void addToAvailableBinPosesArm2(std::string, geometry_msgs::Pose);        // add a pose to a camera in arm2 reach i.e. 3 bins
+
+  void clearBinFromArm1(std::string);
+  void clearBinFromArm2(std::string);
+
+  geometry_msgs::Pose getStaticBinPoseInWorld(std::string cam_name, geometry_msgs::Pose cam_pose, geometry_msgs::Pose child_pose);
 
 private:
-
-ros::NodeHandle logical_nh_;
-ros::AsyncSpinner async_spinner;
-ros::Subscriber logical_subscriber_;
-Transformer transform_;
-Environment * environment_;
-std::string cam_name;
-bool bincam_; // this is to know whether this object is a bin camera 
-bool traycam_;
-bool beltcam_;
-bool triggercam_;
-bool conveyor_belt_trigger;
-bool isBinPartsSorted;
-
-public:
-	LogicalCameraSensor(std::string, Environment *, bool, bool, bool, bool); // belt, bin, tray, trigger
-	~LogicalCameraSensor();
-	int getcount();
-	std::string getCameraName(std::string);
-	void logicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
-	void beltLogicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
-	void staticLogicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
-	void SortAllBinParts();
-	void setBinPartsSorted();
+  std::vector<geometry_msgs::Pose> static_poses_;
+  std::map<std::string, std::vector<int>> available_ind_arm1_; // keep a track of the pose number
+  std::map<std::string, std::vector<int>> available_ind_arm2_; // keep a track of the pose number
+  std::map<std::string, std::vector<geometry_msgs::Pose>> available_poses_arm1_; // keep a track of the pose number
+  std::map<std::string, std::vector<geometry_msgs::Pose>> available_poses_arm2_; // keep a track of the pose number
 };
 
-#endif // GROUP6_RWA5_LOGICAL_CAMERA_SENSOR_H_
+#endif //GROUP6_RWA5_AVAILABLEBINPOSE_H

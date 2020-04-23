@@ -7,15 +7,17 @@
 #include <vector>
 
 #include <ros/ros.h>
-#include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 #include <osrf_gear/Order.h>
 #include <order_part.h>
-
+#include <available_bin_poses.h>
 
 class Environment{
 
     private:
+
+    AvailableBinPoses availablebinposes_;
+    geometry_msgs::Pose* arm1pickuplocation, arm2pickuplocation;
 
     std::map<std::string, std::map<std::string, std::vector<geometry_msgs::Pose>>> all_binParts;
     std::map<std::string, std::vector<geometry_msgs::Pose>> sorted_all_binParts;
@@ -45,6 +47,7 @@ class Environment{
     bool binCameraRequired;
     bool trayCameraRequired;
     bool order_manager_status;
+    bool conveyorTrigger;
 
     public:
     Environment();
@@ -81,22 +84,22 @@ class Environment{
     std::map<std::string, bool>* getBeltCamBoolMap();
     std::map<std::string, bool>* getQualityCamerasPartfaulty();
     
-    
     bool isQualityCamera1Partfaulty();
     bool isQualityCamera2Partfaulty();    
 
     // void sorted_all_binParts(const bool&);
-    void setAllBinCameraCalled(const bool& );
+    
+    bool isAllTrayCameraCalled();
     void setAllTrayCameraCalled(const bool&);
 
-    void setTrayCameraRequired(const bool& );
+    bool isBinCameraRequired();
     void setBinCameraRequired(const bool&);
 
     bool isAllBinCameraCalled();
-    bool isAllTrayCameraCalled();
+    void setAllBinCameraCalled(const bool& );
 
-    bool isBinCameraRequired();
     bool isTrayCameraRequired();
+    void setTrayCameraRequired(const bool &);
 
     void resetBinCamBoolmap();
     void resetTrayCamBoolmap();
@@ -109,6 +112,11 @@ class Environment{
     bool isQuality1Called();
     bool isQuality2Called();
 
+    bool setConveyor1Trigger(const bool&);
+    bool isConveyor1Triggered() const;
+
+    bool setConveyor2Trigger(const bool&);
+    bool isConveyor2Triggered() const;
 };
 
 #endif //GROUP6_RWA4_ENVIRONMENT_H

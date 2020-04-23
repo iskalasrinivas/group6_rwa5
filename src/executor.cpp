@@ -46,11 +46,8 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-Executor::Executor(Environment* env):  arm_1_has_been_zeroed_(false), arm_2_has_been_zeroed_(false) {
+Executor::Executor(Environment* env):  arm_1_has_been_zeroed_(false), arm_2_has_been_zeroed_(false), arm1_("arm1"), arm2_("arm2") {
     
-	arm1_ = new RobotController("arm1");
-	arm2_ = new RobotController("arm2");
-
 	arm_1_joint_trajectory_publisher_ = executer_nh_.advertise<trajectory_msgs::JointTrajectory>( "/ariac/arm1/arm/command", 10);
 
 	arm_2_joint_trajectory_publisher_ = executer_nh_.advertise<trajectory_msgs::JointTrajectory>("/ariac/arm2/arm/command", 10);
@@ -58,8 +55,6 @@ Executor::Executor(Environment* env):  arm_1_has_been_zeroed_(false), arm_2_has_
 
 Executor::~Executor()
 {
-	delete arm1_;
-	delete arm2_;
 }
 
 // Called when a new JointState message is received.
@@ -121,11 +116,11 @@ void Executor::send_arm_to_zero_state(ros::Publisher & joint_trajectory_publishe
 
 
 RobotController* Executor::getArm1Object(){
-    return arm1_;
+    return &arm1_;
 }
 
 RobotController* Executor::getArm2Object(){
-    return arm2_;
+    return &arm2_;
 }
 
 

@@ -63,11 +63,11 @@
 class DynamicPlanner
 {
 private:
-    ros::NodeHandle dpllaner_nh_;
+    ros::NodeHandle dplanner_nh_;
 	ros::AsyncSpinner async_spinner;
     Executor exe_;
     Environment* env_;
-	ros::Subscriber dpllaner_sub_;
+	ros::Subscriber dplanner_sub_;
 
 public:
     DynamicPlanner(Environment*);
@@ -91,7 +91,7 @@ public:
 
 	void dynamicPlanning();
 
-	bool inVicinity(const geometry_msgs::Pose& world_part_pose, RobotController* arm_);
+	bool inVicinity(const geometry_msgs::Pose& world_part_pose, RobotController arm_);
 
 	// void flipPart(OrderPart * oPart);
 };

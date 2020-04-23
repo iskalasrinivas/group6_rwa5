@@ -51,7 +51,7 @@ DynamicPlanner::DynamicPlanner(Environment* env): async_spinner(0), env_(env), e
 	// ros::AsyncSpinner async_spinner(0); 
 	async_spinner.start();
 
-	dpllaner_sub_ = dpllaner_nh_.subscribe<std_msgs::Bool>("/ariac/execute_executer", 10 ,&DynamicPlanner::dynamicPlannerCallBack, this);
+	dplanner_sub_ = dplanner_nh_.subscribe<std_msgs::Bool>("/ariac/execute_executer", 10 ,&DynamicPlanner::dynamicPlannerCallBack, this);
 
 	
 }
@@ -107,6 +107,19 @@ void DynamicPlanner::dynamicPlanning() {
 	ROS_INFO_STREAM("<<<<<<<In Execute modules");
 	// Execute Pre-order tasks of arm1
 	auto arm1_ = exe_.getArm1Object();
+	auto arm2_ = exe_.getArm2Object();
+
+	if(env_->isConveyor1Triggered()) {
+					// call function to handle cb pickup
+		arm1_->sendBeltHome();
+		arm1_->pickpartfrombelt();
+	}
+	if(env_->isConveyor2Triggered()) {
+					// call function to handle cb pickup
+		arm2_->sendBeltHome();
+		arm2_->pickpartfrombelt();
+	}
+
 	std::vector<std::map<std::string, std::vector<OrderPart*>>>* arm1preOrderParts = env_->getArm1PreOrderParts(); // std::vector<std::map<std::string, std::vector<OrderPart*>>>*
 	for(auto po1_vec_it = arm1preOrderParts->begin(); po1_vec_it != arm1preOrderParts->end(); ++po1_vec_it) {
 		
@@ -114,6 +127,12 @@ void DynamicPlanner::dynamicPlanning() {
 			
 			for(auto po1_it = po1_map_it->second.begin();po1_it != po1_map_it->second.end(); ++po1_it) { // pol_it is basically iterator to std::vector<OrderPart*>
 				ROS_INFO_STREAM("<<< Pre Order Arm1 >>>");
+				// TODO
+				if(env_->isConveyor1Triggered()) {
+					// call function to handle cb pickup
+					arm1_->sendBeltHome();
+					arm1_->startBeltOperation();
+				}
 				arm1_->pickPart((*po1_it)->getCurrentPose());
 				ROS_INFO_STREAM("<<<<<<<arm1 going to quality bin");
 				arm1_->GoToQualityCameraFromBin();
@@ -138,7 +157,7 @@ void DynamicPlanner::dynamicPlanning() {
 
 
 	// Execute Pre-order tasks of arm2
-	auto arm2_ = exe_.getArm2Object();
+	
 	std::vector<std::map<std::string, std::vector<OrderPart*>>>* arm2preOrderParts = env_->getArm2PreOrderParts();
 	for(auto po2_vec_it = arm2preOrderParts->begin(); po2_vec_it != arm2preOrderParts->end(); ++po2_vec_it) {
 	
@@ -284,45 +303,3 @@ bool DynamicPlanner::checkPoseTray2(){
 }
 
 
-// raja
-
-bool DynamicPlanner::inVicinity(const geometry_msgs::Pose& world_part_pose, RobotController* arm_) {
-	double threshold_z = 0.1;
-	double threshold_y = 0.35;
-	return (arm_->getHomeCartPose().position.z-
-			world_part_pose.position.z < threshold_z &&
-			arm_->getHomeCartPose().position.y-
-			world_part_pose.position.y < threshold_y);
-}
-
-void DynamicPlanner::pickPartFromBelt(std::string arm, geometry_msgs::Pose world_part_pose, double y){
-    RobotController* arm_;
-    if(arm == "arm1"){
-		 arm_ = exe_.getArm1Object();
-	}
-	else if(arm == "arm2"){
-		 arm_ = exe_.getArm2Object();
-	}
-	if (!arm_->isPartAttached()) {
-        world_part_pose.position.z += 0.02;
-		world_part_pose.position.y -= y; 
-		arm_->GoToTarget(world_part_pose);
-		if (inVicinity(world_part_pose, arm_)) {
-			ROS_WARN_STREAM("Gripper toggled");
-			arm_->GripperToggle(true);
-			while (!arm_->isPartAttached()) {
-				ROS_WARN_STREAM("Part not attached");
-				world_part_pose.position.z += 0.004;
-				world_part_pose.position.y -= 2*y;
-				arm_->GoToTarget(world_part_pose);
-				world_part_pose.position.z -= 0.004;
-				world_part_pose.position.y -= 2*y;
-				arm_->GoToTarget(world_part_pose);
-			}
-			ROS_INFO_STREAM("Part attached");
-			world_part_pose.position.z += 0.2;
-			world_part_pose.position.y -= y;
-			arm_->GoToTarget(world_part_pose);
-		}
-	} 	
-}

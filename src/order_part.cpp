@@ -109,8 +109,8 @@ bool OrderPart::getFlipPart() const {
 	return flip_part;
 }
 
-void OrderPart::setFlipPart(){
-	flip_part = true;
+void OrderPart::setFlipPart(const bool & condition){
+	flip_part = condition;
 }
 
 void OrderPart::worldTransformation() {

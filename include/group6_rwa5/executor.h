@@ -69,8 +69,8 @@ private:
 	bool arm_1_has_been_zeroed_;
 	bool arm_2_has_been_zeroed_;
 
-	RobotController* arm1_; 
-	RobotController* arm2_;
+	RobotController arm1_; 
+	RobotController arm2_;
 
 	ros::NodeHandle executer_nh_;
 

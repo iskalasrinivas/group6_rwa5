@@ -1,6 +1,6 @@
 /**
- * @file      include/logical_camera_sensor.h
- * @brief     Header file for Sensor
+ * @file      include/common_area.h
+ * @brief     Header file for competition
  * @author    Saurav Kumar
  * @author    Raja Srinivas
  * @author    Sanket Acharya
@@ -39,44 +39,30 @@
  *OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GROUP6_RWA5_LOGICAL_CAMERA_SENSOR_H_
-#define GROUP6_RWA5_LOGICAL_CAMERA_SENSOR_H_
+#ifndef GROUP6_RWA5_AVAILABLEBINPOSE_H
+#define GROUP6_RWA5_AVAILABLEBINPOSE_H
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <osrf_gear/LogicalCameraImage.h>
-#include <transformer.h>
-#include <environment.h>
+#include <ros/ros.h>
+#include <geometry_msgs/Pose.h>
+
+class AvailableBinPose {
+  public:
+      AvailableBinPose();
+      ~AvailableBinPose();
+
+      void setCommonPosesArm1();
+      void setCommonPosesArm1();
+      void setCommonPosesArm2();
+      void setCommonPosesArm2();
+      void addAvailableBinPosesArm1(std::string);
+      void addAvailableBinPosesArm2(std::string);
+      void sortAvailableBinArm1(); ///based on the availability and arm
+      void sortAvailableBinArm2(); ///based on the availability and arm
 
 
-
-
-class LogicalCameraSensor {
-
-private:
-
-ros::NodeHandle logical_nh_;
-ros::AsyncSpinner async_spinner;
-ros::Subscriber logical_subscriber_;
-Transformer transform_;
-Environment * environment_;
-std::string cam_name;
-bool bincam_; // this is to know whether this object is a bin camera 
-bool traycam_;
-bool beltcam_;
-bool triggercam_;
-bool conveyor_belt_trigger;
-bool isBinPartsSorted;
-
-public:
-	LogicalCameraSensor(std::string, Environment *, bool, bool, bool, bool); // belt, bin, tray, trigger
-	~LogicalCameraSensor();
-	int getcount();
-	std::string getCameraName(std::string);
-	void logicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
-	void beltLogicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
-	void staticLogicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr &);
-	void SortAllBinParts();
-	void setBinPartsSorted();
+  private:
+     std::map<std::string, std::vector<geometry_msgs::Pose>> common_pose_arm1; // map<cam_name , vec<poses>>
+     std::map<std::string, std::vector<geometry_msgs::Pose>> common_pose_arm2; // map<cam_name , vec<poses>>
 };
 
-#endif // GROUP6_RWA5_LOGICAL_CAMERA_SENSOR_H_
+#endif //GROUP6_RWA5_AVAILABLEBINAREA_H

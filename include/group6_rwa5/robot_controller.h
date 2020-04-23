@@ -1,4 +1,4 @@
-/**
+current_Robot_pose_/**
  * @file      include/robot_controller.h
  * @brief     Header file Robot contoller
  * @author    Saurav Kumar
@@ -94,6 +94,7 @@ private:
 	geometry_msgs::Pose quality_static_pose;
 	geometry_msgs::Pose current_pose_;
 
+    std::vector<double> belt_joint_pose_;
 	std::vector<double> home_joint_pose_;
 	std::vector<double> quality_cam_joint_position_;
 	std::vector<double> trash_bin_joint_position_;
@@ -113,7 +114,9 @@ private:
 	bool plan_success_;
 
 
-	geometry_msgs::Quaternion fixed_orientation_;
+	geometry_msgs::Quaternion face_down_orientation_;
+    geometry_msgs::Quaternion face_left_orientation_;
+	geometry_msgs::Quaternion face_right_orientation_;
 	geometry_msgs::Pose agv_position_;
 
 	// geometry_msgs::Pose end_pose_;
@@ -129,6 +132,7 @@ public:
 	explicit RobotController(std::string);
 	~RobotController();
 	bool Planner();
+	void chooseArm()
 	void lookupTransform();
 	void Execute();
 	void moveToTarget(geometry_msgs::Pose);
@@ -138,7 +142,7 @@ public:
 	void GoToAGV(const geometry_msgs::Pose&);
 	void flipPart(OrderPart *order_);
 
-		void GripperToggle(const bool &);
+	void GripperToggle(const bool &);
 	void GripperCallback(const osrf_gear::VacuumGripperState::ConstPtr&);
 	void GripperStateCheck(geometry_msgs::Pose);
 	bool isPartAttached();

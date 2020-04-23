@@ -1,7 +1,7 @@
 #include <logical_camera_sensor.h>
 
-LogicalCameraSensor::LogicalCameraSensor(std::string topic, Environment * env, bool blc, bool bc, bool tc):
-async_spinner(0), environment_(env), beltcam_(blc), bincam_(bc) ,traycam_(tc), transform_(topic), isBinPartsSorted(false){
+LogicalCameraSensor::LogicalCameraSensor(std::string topic, Environment * env, bool blc, bool bc, bool tc,  bool trigcam):
+async_spinner(0), environment_(env), beltcam_(blc), bincam_(bc) ,traycam_(tc), triggercam_(trigcam), transform_(topic), isBinPartsSorted(false){
 	async_spinner.start();
 	getCameraName(topic);
 	if (bincam_) {
@@ -21,8 +21,6 @@ async_spinner(0), environment_(env), beltcam_(blc), bincam_(bc) ,traycam_(tc), t
 	logical_subscriber_ = logical_nh_.subscribe(topic, 10 ,
 			&LogicalCameraSensor::logicalCameraCallback, this);
 }
-
-
 
 
 LogicalCameraSensor::~LogicalCameraSensor(){}
@@ -65,11 +63,61 @@ void LogicalCameraSensor::SortAllBinParts() {
 void LogicalCameraSensor::logicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg) {
 	if( beltcam_ == true) {
 		beltLogicalCameraCallback(image_msg);
+	} else if(triggercam_ == true) {
+		beltTriggerLogicalCameraCallback(image_msg);
 	} else {
 		staticLogicalCameraCallback(image_msg);
 	}
 }
-void LogicalCameraSensor::beltLogicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg) {
+
+//TODO
+void LogicalCameraSensor::beltTriggerLogicalCameraCallback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg) {
+	auto Arm1COP = environment_->getArm1ConveyorOrderParts();
+	auto Arm2COP = environment_->getArm2ConveyorOrderParts();
+	
+	if(!image_msg->models.empty()) {
+		for (auto it = image_msg->models.begin(); it != image_msg->models.end();++it) {
+			if(Arm1COP->count(it->type)) {
+				environment_->setConveyor1Trigger(true);
+				// if count(arm1) > count(arms2) --> assign arm1
+			} else if(Arm2COP->count(it->type)){
+				environment_->setConveyor2Trigger(true);
+			}
+		}
+	}
+}
+
+//TODO
+void LogicalCameraSensor::beltLogicalCameraCallback (const osrf_gear::LogicalCameraImage::ConstPtr & image_msg) {
+	auto sensor_pose = image_msg->pose;
+	transform_.setParentPose(sensor_pose);
+	auto Arm1COP = environment_->getArm1ConveyorOrderParts();
+	auto Arm2COP = environment_->getArm2ConveyorOrderParts();
+	auto arm1pickuplocation = environment_->getBeltArm1PickupLocation();
+	auto arm2pickuplocation =  environment_->getBeltArm1PickupLocation();
+
+	for (auto it = image_msg->models.begin(); it != image_msg->models.end();++it) {
+		if(Arm1COP->count(it->type)) {
+			transform_.setChildPose(it->pose);
+			transform_.setWorldTransform();
+			geometry_msgs::Pose pose = transform_.getChildWorldPose();
+			if (arm1pickuplocation  == nullptr) {
+				environment_->createBeltArm1PickupLocation(pose);	
+			} else if(arm1pickuplocation->position.y > it->pose.position.y) {
+				environment_->setBeltArm1PickupLocation(pose);
+			}
+			// break;
+		} else if (Arm2COP->count(it->type)) {
+			transform_.setChildPose(it->pose);
+			transform_.setWorldTransform();
+			geometry_msgs::Pose pose = transform_.getChildWorldPose();
+			if (arm2pickuplocation  == nullptr) {
+				environment_->createBeltArm2PickupLocation(pose);	
+			} else if(arm2pickuplocation->position.y > it->pose.position.y) {
+				environment_->setBeltArm2PickupLocation(pose);
+			}
+			// break;
+		}
 
 }
 
@@ -150,4 +198,20 @@ void LogicalCameraSensor::staticLogicalCameraCallback(const osrf_gear::LogicalCa
 			}
 		}
 	}
+	if(bincam_) {
+		if(image_msg->models.size() < 4) {
+			if(image_msg->pose.y >= 0) {
+				environment_->addToAvailableBinPosesArm1(cam_name, image_msg->pose);
+			} else  if(image_msg->pose.y < 0) {
+				environment_->addToAvailableBinPosesArm2(cam_name, image_msg->pose);
+			}
+		} else {
+			if(image_msg->pose >= 0) {
+				environment_->clearBinFromArm1(cam_name);
+			} else  if(image_msg->pose < 0) {
+				environment_->clearBinFromArm2(cam_name);
+			}
+		}
+	}
+	
 }

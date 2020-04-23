@@ -127,7 +127,7 @@ void Planner::plan() {
 				if ((*ord_it)->getCurrentPose().position.y < -1.5)
 				{ // order part is not reachable To-DO ----- make sure value is right
 					// add a copy of this part to agv2 order parts
-					ROS_INFO_STREAM("Part is not reachable by arm-1, part: " << (*ord_it)->getPartType() << (*ord_it)->getCurrentPose());
+					ROS_INFO_STREAM("Part is not reachable by arm-1, Part: " << (*ord_it)->getPartType() <<" "<< (*ord_it)->getCurrentPose());
 					OrderPart* part = new OrderPart();
 					part->setPartType((*ord_it)->getPartType());
 					part->setCurrentPose((*ord_it)->getCurrentPose());
@@ -174,7 +174,7 @@ void Planner::plan() {
 					OrderPart *part = new OrderPart();
 					part->setPartType((*ord_it)->getPartType());
 					part->setCurrentPose((*ord_it)->getCurrentPose());
-					ROS_INFO_STREAM("Part is not reachable by arm-, part: " << (*ord_it)->getPartType() << (*ord_it)->getCurrentPose());
+					ROS_INFO_STREAM("Part is not reachable by arm-2, part: " << (*ord_it)->getPartType() <<" "<< (*ord_it)->getCurrentPose());
 					// TO-DO ---- set ommon bin pose so that arm1 can pick it from there.
 					// add it to the beginning of agv2 as a new shipment
 					if( common_pose_ind <= 3) {
