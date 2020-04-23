@@ -54,7 +54,10 @@ public:
     ~PriorityOrder();
 
 private:
-    std::priority_queue<OrderPart*> priority_queue_;
+
+    auto comp = [](OrderPart* a, OrderPart* b ) { return a->getPriority() > b->getPriority();};
+    std::priority_queue<OrderPart*, std::vector<OrderPart*>, decltype(comp)>> priority_queue_(comp);
+    
 };
 
 #endif //GROUP6_RWA5_PRIORITYORDER_H

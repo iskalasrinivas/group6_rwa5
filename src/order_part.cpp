@@ -81,6 +81,10 @@ void OrderPart::setTrayId(std::string agv_id){
 	tray_id = agv_id;
 }
 
+void OrderPart::setPriority(int prior){
+	priority = prior;
+}
+
 std::string OrderPart::getPartType() const {
 	return part_type_;
 }
@@ -107,6 +111,10 @@ std::string OrderPart::getTrayId(){
 
 bool OrderPart::getFlipPart() const {
 	return flip_part;
+}
+
+int OrderPart::getPriority() const {
+	return priority;
 }
 
 void OrderPart::setFlipPart(const bool & condition){
