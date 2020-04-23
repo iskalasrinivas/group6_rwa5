@@ -85,7 +85,7 @@ public:
 
 	void pickPartFromBelt(std::string, geometry_msgs::Pose , double); //raja
 
-    bool checkPoseTray1();
+    	bool checkPoseTray1();
 	
 	bool checkPoseTray2();
 
